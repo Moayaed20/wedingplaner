@@ -27,6 +27,10 @@ export function RequireAuth({ role, fallback, children }: RequireAuthProps) {
     }
   }, [isLoading, isAuthenticated, role, isRole, router, pathname]);
 
+  if (!isLoading && !isAuthenticated) {
+    return null;
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">

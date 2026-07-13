@@ -35,11 +35,18 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
-            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
+            mongoose_1.MongooseModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                useFactory: (config) => ({
+                    uri: config.get('MONGO_URI') ||
+                        'mongodb://127.0.0.1:27017/wedding_hall_booking',
+                }),
+                inject: [config_1.ConfigService],
+            }),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (config) => ({
-                    secret: config.get('JWT_SECRET'),
+                    secret: config.get('JWT_SECRET') || 'dev-secret-change-me',
                     signOptions: { expiresIn: '7d' },
                 }),
                 inject: [config_1.ConfigService],

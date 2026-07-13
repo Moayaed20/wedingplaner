@@ -90,7 +90,11 @@ function ServicesPage() {
   );
 
   return (
-    <DashboardShell navItems={navItems} userName="المشرف" userRoleLabel="إدارة الخدمات العالمية">
+    <DashboardShell
+      navItems={adminNavItems}
+      userName="المشرف"
+      userRoleLabel="إدارة الخدمات العالمية"
+    >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-extrabold text-ink">الخدمات</h2>
         <Button className="rounded-full" onClick={() => { setShowCreate(true); setCreateForm(emptyForm); }}>
@@ -116,7 +120,9 @@ function ServicesPage() {
               <tr key={s.id} className="border-t border-border">
                 <td className="px-5 py-3 text-ink/80">{s.type}</td>
                 <td className="px-5 py-3 font-semibold text-ink">{s.name}</td>
-                <td className="px-5 py-3 font-bold text-primary">{formatSYP(s.price)}</td>
+                <td className="px-5 py-3 font-bold text-primary">
+                  {formatSYP(s.price)}
+                </td>
                 <td className="px-5 py-3">
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" className="rounded-full" onClick={() => openEdit(s)}>

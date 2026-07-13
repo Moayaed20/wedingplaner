@@ -9,6 +9,7 @@ import { RequireAuth } from "@/components/auth/require-auth";
 import { useApi, useMutation } from "@/hooks/use-api";
 import { UsersAPI } from "@/lib/api";
 import type { User, Role } from "@/lib/types";
+import { adminNavItems } from "@/components/admin/admin-nav-items";
 import {
   Dialog,
   DialogContent,
@@ -25,11 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const navItems = [
-  { href: "/admin", label: "لوحة التحكم", icon: Users },
-  { href: "/admin/users", label: "المستخدمون", icon: Users },
-];
 
 function UsersPage() {
   const {
@@ -135,7 +131,7 @@ function UsersPage() {
 
   return (
     <DashboardShell
-      navItems={navItems}
+      navItems={adminNavItems}
       userName="المشرف"
       userRoleLabel="إدارة المستخدمين"
     >

@@ -20,11 +20,19 @@ import { ReviewsModule } from './reviews/reviews.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGO_URI),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        uri:
+          config.get<string>('MONGO_URI') ||
+          'mongodb://127.0.0.1:27017/wedding_hall_booking',
+      }),
+      inject: [ConfigService],
+    }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get<string>('JWT_SECRET') || 'dev-secret-change-me',
         signOptions: { expiresIn: '7d' },
       }),
       inject: [ConfigService],

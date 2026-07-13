@@ -166,6 +166,7 @@ export interface Catering {
   price_per_person: number;
   menu_type: string;
   description?: string;
+  images: string[];
   status: HallStatus;
 }
 
@@ -174,6 +175,7 @@ export interface CreateCateringBody {
   price_per_person: number;
   menu_type: string;
   description?: string;
+  images?: string[];
   status?: HallStatus;
 }
 

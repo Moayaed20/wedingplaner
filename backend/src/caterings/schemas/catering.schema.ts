@@ -23,6 +23,9 @@ export class Catering {
   @Prop()
   description: string;
 
+  @Prop({ type: [String], default: [] })
+  images: string[];
+
   @Prop({ enum: HallStatus, default: HallStatus.ACTIVE })
   status: HallStatus;
 }

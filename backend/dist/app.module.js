@@ -25,6 +25,7 @@ const music_module_1 = require("./music/music.module");
 const services_module_1 = require("./services/services.module");
 const bookings_module_1 = require("./bookings/bookings.module");
 const reviews_module_1 = require("./reviews/reviews.module");
+const upload_module_1 = require("./upload/upload.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(auth_middleware_1.AuthMiddleware).forRoutes('*');
@@ -61,6 +62,7 @@ exports.AppModule = AppModule = __decorate([
             services_module_1.ServicesModule,
             bookings_module_1.BookingsModule,
             reviews_module_1.ReviewsModule,
+            upload_module_1.UploadModule,
         ],
         providers: [
             {

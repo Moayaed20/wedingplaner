@@ -4,5 +4,6 @@ export declare class CreateCateringDto {
     price_per_person: number;
     menu_type: string;
     description?: string;
+    images?: string[];
     status?: HallStatus;
 }

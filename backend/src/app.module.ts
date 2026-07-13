@@ -16,6 +16,7 @@ import { MusicModule } from './music/music.module';
 import { ServicesModule } from './services/services.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     ServicesModule,
     BookingsModule,
     ReviewsModule,
+    UploadModule,
   ],
   providers: [
     {

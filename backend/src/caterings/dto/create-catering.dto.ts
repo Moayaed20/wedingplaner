@@ -5,6 +5,7 @@ import {
   Min,
   IsOptional,
   IsEnum,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { HallStatus } from '../../common/enums/hall-status.enum';
@@ -26,6 +27,11 @@ export class CreateCateringDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 
   @IsOptional()
   @IsEnum(HallStatus)

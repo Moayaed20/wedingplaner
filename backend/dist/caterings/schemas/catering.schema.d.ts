@@ -8,6 +8,7 @@ export declare class Catering {
     price_per_person: number;
     menu_type: string;
     description: string;
+    images: string[];
     status: HallStatus;
 }
 export declare const CateringSchema: import("mongoose").Schema<Catering, import("mongoose").Model<Catering, any, any, any, import("mongoose").Document<unknown, any, Catering, any, {}> & Catering & Required<{

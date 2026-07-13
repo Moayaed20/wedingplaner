@@ -39,6 +39,12 @@ __decorate([
 ], CreateCateringDto.prototype, "description", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], CreateCateringDto.prototype, "images", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(hall_status_enum_1.HallStatus),
     __metadata("design:type", String)
 ], CreateCateringDto.prototype, "status", void 0);

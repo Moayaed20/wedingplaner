@@ -11,11 +11,11 @@ import { RequireAuth } from "@/components/auth/require-auth";
 import { ImageUploader } from "@/components/ui/image-uploader";
 import { useApi, useMutation } from "@/hooks/use-api";
 import {
-  HallsAPI, CateringsAPI, DecorationsAPI, CarsAPI, MusicAPI,
+  HallsAPI, CateringsAPI, DecorationsAPI, CarsAPI, MusicAPI, UsersAPI,
 } from "@/lib/api";
 import { formatSYP } from "@/lib/utils";
 import type {
-  CreateHallBody, Hall,
+  CreateHallBody, Hall, User,
   Catering, CreateCateringBody,
   Decoration, CreateDecorationBody,
   Car, CreateCarBody,
@@ -136,10 +136,12 @@ function EditHallPage() {
   const { data: hall, isLoading: loadingHall, error: fetchError } = useApi<Hall>(
     () => HallsAPI.get(hallId), [hallId],
   );
+  const { data: users } = useApi<User[]>((t) => UsersAPI.list(t), []);
+  const hallOwners = (users ?? []).filter((u) => u.role === "hall_owner");
 
   const [formData, setFormData] = useState<CreateHallBody>({
     name: "", address: "", city: "", postcode: "",
-    price_per_person: 0, min_capacity: 0, max_capacity: 0, contact: "", images: [],
+    price_per_person: 0, min_capacity: 0, max_capacity: 0, contact: "", images: [], owner_id: "",
   });
 
   useEffect(() => {
@@ -149,6 +151,7 @@ function EditHallPage() {
         postcode: hall.postcode || "", price_per_person: hall.price_per_person,
         min_capacity: hall.min_capacity, max_capacity: hall.max_capacity,
         contact: hall.contact || "", images: hall.images || [],
+        owner_id: typeof hall.owner_id === "string" ? hall.owner_id : (hall.owner_id as any)?._id ?? "",
       });
     }
   }, [hall]);
@@ -162,8 +165,8 @@ function EditHallPage() {
     if (result) router.push("/admin/halls");
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
     setFormData((prev) => ({ ...prev, [name]: type === "number" ? Number(value) : value }));
   };
 
@@ -241,6 +244,17 @@ function EditHallPage() {
 
       {/* ── Hall form ── */}
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-4">
+        {/* Owner */}
+        <div className="space-y-1.5">
+          <Label htmlFor="owner_id">مالك القاعة (hall owner)</Label>
+          <select id="owner_id" name="owner_id" className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+            value={formData.owner_id ?? ""} onChange={handleChange}>
+            <option value="">بدون مالك</option>
+            {hallOwners.map((u) => (
+              <option key={u.id} value={u.id}>{u.name} — {u.email}</option>
+            ))}
+          </select>
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="name">اسم القاعة</Label>
@@ -314,7 +328,7 @@ function EditHallPage() {
           <AddonSection<Catering, CreateCateringBody, Partial<CreateCateringBody>>
             items={caterings ?? []}
             loading={loadingCat}
-            emptyForm={{ menu_name: "", price_per_person: 0, menu_type: "", description: "" }}
+            emptyForm={{ menu_name: "", price_per_person: 0, menu_type: "", description: "", images: [] }}
             renderRow={(c) => (
               <span>
                 <span className="font-medium">{c.menu_name}</span>
@@ -333,6 +347,8 @@ function EditHallPage() {
                   <input type="number" min={0} className={inputCls} value={form.price_per_person} onChange={(e) => setForm((f) => ({ ...f, price_per_person: Number(e.target.value) }))} /></div>
                 <div><label className={labelCls}>الوصف</label>
                   <input className={inputCls} value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} /></div>
+                <div><label className={labelCls}>الصور</label>
+                  <ImageUploader images={form.images ?? []} onChange={(imgs) => setForm((f) => ({ ...f, images: imgs }))} max={5} /></div>
               </>
             )}
             onCreate={async (form) => { await createCat(form); refetchCat(); }}

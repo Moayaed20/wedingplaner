@@ -91,7 +91,7 @@ function ServicesPage() {
 
   return (
     <DashboardShell
-      navItems={adminNavItems}
+      navItems={navItems}
       userName="المشرف"
       userRoleLabel="إدارة الخدمات العالمية"
     >

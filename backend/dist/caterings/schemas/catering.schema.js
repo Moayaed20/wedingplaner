@@ -37,6 +37,10 @@ __decorate([
     __metadata("design:type", String)
 ], Catering.prototype, "description", void 0);
 __decorate([
+    (0, mongoose_1.Prop)({ type: [String], default: [] }),
+    __metadata("design:type", Array)
+], Catering.prototype, "images", void 0);
+__decorate([
     (0, mongoose_1.Prop)({ enum: hall_status_enum_1.HallStatus, default: hall_status_enum_1.HallStatus.ACTIVE }),
     __metadata("design:type", String)
 ], Catering.prototype, "status", void 0);

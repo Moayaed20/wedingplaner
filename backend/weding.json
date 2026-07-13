@@ -1,0 +1,932 @@
+
+{
+  "info": {
+    "name": "منصة صالات الأفراح - Wedding Halls API (Admin Only for Options)",
+    "description": "مجموعة APIs كاملة. الأدمن فقط يمكنه إضافة/تعديل/حذف الصالات وجميع الخيارات (الضيافة، الزينة، السيارات، الموسيقى). صاحب الصالة يدير صالته والحجوزات.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "المصادقة (Auth)",
+      "item": [
+        {
+          "name": "تسجيل جديد (Register)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"علي أحمد\",\n  \"email\": \"ali@example.com\",\n  \"password\": \"123456\",\n  \"role\": \"customer\",\n  \"phone\": \"+963912345678\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "تسجيل الدخول (Login)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "معلوماتي (Get Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "المستخدمون (Users) - للأدمن فقط",
+      "item": [
+        {
+          "name": "جلب كل المستخدمين",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "جلب مستخدم واحد",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إنشاء مستخدم (مع تحديد الدور)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"صالة الياسمين\",\n  \"email\": \"hall1@example.com\",\n  \"password\": \"123456\",\n  \"role\": \"hall_owner\",\n  \"phone\": \"+963111111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "تعديل مستخدم",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"الاسم الجديد\",\n  \"phone\": \"+963999999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف مستخدم",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "الصالات (Halls) - الإضافة/الحذف للأدمن فقط",
+      "item": [
+        {
+          "name": "كل الصالات (عامة)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls",
+              "host": ["{{base_url}}"],
+              "path": ["halls"],
+              "query": [
+                { "key": "city", "value": "دمشق", "disabled": true },
+                { "key": "minCapacity", "value": "100", "disabled": true },
+                { "key": "maxCapacity", "value": "300", "disabled": true },
+                { "key": "maxPrice", "value": "2000", "disabled": true },
+                { "key": "rating", "value": "4", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تفاصيل صالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:id",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "صالاتي (لصاحب الصالة)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/halls/mine",
+              "host": ["{{base_url}}"],
+              "path": ["halls", "mine"]
+            }
+          }
+        },
+        {
+          "name": "إنشاء صالة (أدمن فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"قاعة الياسمين\",\n  \"address\": \"دمشق، المزة، شارع 11\",\n  \"city\": \"دمشق\",\n  \"postcode\": \"12345\",\n  \"price_per_person\": 25,\n  \"min_capacity\": 100,\n  \"max_capacity\": 400,\n  \"contact\": \"+963988776655\",\n  \"owner_id\": \"60d...\" (اختياري)\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls",
+              "host": ["{{base_url}}"],
+              "path": ["halls"]
+            }
+          }
+        },
+        {
+          "name": "تعديل صالة (صاحب الصالة أو أدمن)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"قاعة الياسمين الكبرى\",\n  \"price_per_person\": 30,\n  \"images\": [\"image1.jpg\", \"image2.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls/:id",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف صالة (أدمن فقط)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/halls/:id",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "قوائم الطعام (Caterings) - الإدارة للأدمن فقط",
+      "item": [
+        {
+          "name": "جلب قوائم طعام صالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/caterings",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "caterings"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة قائمة طعام (أدمن فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"menu_name\": \"بوفيه مفتوح\",\n  \"price_per_person\": 20,\n  \"menu_type\": \"بوفيه\",\n  \"description\": \"مقبلات + طبق رئيسي + حلويات\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/caterings",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "caterings"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تعديل قائمة طعام (أدمن فقط)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price_per_person\": 25,\n  \"status\": \"inactive\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/caterings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["caterings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف قائمة طعام (أدمن فقط)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/caterings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["caterings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "الزينة (Decorations) - الإدارة للأدمن فقط",
+      "item": [
+        {
+          "name": "جلب خيارات الزينة لصالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/decorations",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "decorations"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة ثيم زينة (أدمن فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"theme_name\": \"كلاسيكي فخم\",\n  \"price\": 800,\n  \"description\": \"ورود بيضاء وإضاءة ذهبية\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/decorations",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "decorations"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تعديل ثيم زينة (أدمن فقط)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 750\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/decorations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["decorations", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف ثيم زينة (أدمن فقط)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/decorations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["decorations", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "السيارات (Cars) - الإدارة للأدمن فقط",
+      "item": [
+        {
+          "name": "جلب خيارات السيارات لصالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/cars",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "cars"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة سيارة (أدمن فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"car_name\": \"رولز رويس فانتوم\",\n  \"model\": \"2023\",\n  \"price\": 500,\n  \"capacity\": 4,\n  \"description\": \"سيارة العروس مع سائق رسمي\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/cars",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "cars"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تعديل سيارة (أدمن فقط)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 550\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cars/:id",
+              "host": ["{{base_url}}"],
+              "path": ["cars", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف سيارة (أدمن فقط)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/cars/:id",
+              "host": ["{{base_url}}"],
+              "path": ["cars", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "الموسيقى (Music) - الإدارة للأدمن فقط",
+      "item": [
+        {
+          "name": "جلب خيارات الموسيقى لصالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/music",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "music"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة خيار موسيقى (أدمن فقط)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DJ ساهر\",\n  \"type\": \"DJ\",\n  \"price\": 400,\n  \"description\": \"أغاني عربية وغربية ومايك للزفة\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/music",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "music"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تعديل خيار موسيقى (أدمن فقط)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 350\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/music/:id",
+              "host": ["{{base_url}}"],
+              "path": ["music", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف خيار موسيقى (أدمن فقط)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/music/:id",
+              "host": ["{{base_url}}"],
+              "path": ["music", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "الخدمات العامة (Global Services) - اختياري",
+      "item": [
+        {
+          "name": "جلب كل الخدمات العامة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": ["{{base_url}}"],
+              "path": ["services"],
+              "query": [
+                { "key": "type", "value": "photography", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة خدمة عامة (أدمن)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"photography\",\n  \"name\": \"مصور محترف - الباقة الذهبية\",\n  \"price\": 700,\n  \"description\": \"12 ساعة تصوير + ألبومين\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": ["{{base_url}}"],
+              "path": ["services"]
+            }
+          }
+        },
+        {
+          "name": "تعديل خدمة عامة",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 800\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حذف خدمة عامة",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "الحجوزات (Bookings)",
+      "item": [
+        {
+          "name": "إنشاء حجز (عميل)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hall_id\": \"60d...\",\n  \"event_date\": \"2026-09-10\",\n  \"guest_count\": 150,\n  \"selected_caterings\": [\n    {\"catering_id\": \"60d...\", \"quantity\": 150},\n    {\"catering_id\": \"60d...\", \"quantity\": 150}\n  ],\n  \"selected_decoration_id\": \"60d...\",\n  \"selected_car_id\": null,\n  \"selected_music_id\": \"60d...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "حجوزاتي (عميل)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/mine",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "mine"]
+            }
+          }
+        },
+        {
+          "name": "تفاصيل حجز (للعميل أو صاحب الصالة)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "حجوزات صالة (صاحب الصالة أو أدمن)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/hall/:hallId",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "hall", ":hallId"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "تأكيد حجز (صاحب الصالة أو أدمن)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/:id/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id", "confirm"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "رفض حجز (صاحب الصالة أو أدمن)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/:id/reject",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إلغاء حجز (عميل)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/bookings/:id/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "التقييمات (Reviews) - للصالات",
+      "item": [
+        {
+          "name": "تقييمات صالة",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/halls/:hallId/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["halls", ":hallId", "reviews"],
+              "variable": [
+                {
+                  "key": "hallId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "إضافة تقييم (عميل)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hall_id\": \"60d...\",\n  \"rating\": 5,\n  \"review_text\": \"صالة رائعة وتعامل ممتاز\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["reviews"]
+            }
+          }
+        },
+        {
+          "name": "حذف تقييم (أدمن أو صاحب التقييم)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/reviews/:id",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

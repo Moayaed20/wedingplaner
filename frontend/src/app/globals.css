@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 40% 98%;
+    --foreground: 340 15% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 340 15% 12%;
+
+    --primary: 346 78% 47%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 30% 95%;
+    --secondary-foreground: 340 15% 15%;
+
+    --muted: 30 20% 95%;
+    --muted-foreground: 340 8% 45%;
+
+    --accent: 346 78% 96%;
+    --accent-foreground: 346 78% 30%;
+
+    --border: 30 15% 89%;
+    --input: 30 15% 89%;
+    --ring: 346 78% 47%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01" on, "ss02" on;
+  }
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* Soft decorative mesh blobs used on landing/auth pages */
+  .mesh-blob {
+    @apply pointer-events-none absolute rounded-full blur-3xl opacity-40;
+  }
+  .mesh-blob-rose {
+    background: linear-gradient(135deg, #f9d0da 0%, #f4a9bd 100%);
+  }
+  .mesh-blob-sky {
+    background: linear-gradient(135deg, #dbeafe 0%, #c7d2fe 100%);
+  }
+  .mesh-blob-mint {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  }
+  .mesh-blob-peach {
+    background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+  }
+}

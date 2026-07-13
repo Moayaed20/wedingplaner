@@ -104,17 +104,13 @@ function normalizeDocument(doc: any): any {
     // معالجة الحقول المرجعية (تنتهي بـ _id)
     if (value && typeof value === "object") {
       if (key.endsWith("_id") && value._id !== undefined) {
-        // تحويل الحقل إلى سلسلة (معرف المرجع)
         doc[key] = value._id.toString ? value._id.toString() : value._id;
-        // إضافة حقل مملوء (بدون _id)
         const populatedKey = key.slice(0, -3);
         doc[populatedKey] = normalizeDocument(value);
       } else {
-        // تطبيع الكائن الداخلي
         doc[key] = normalizeDocument(value);
       }
     } else if (Array.isArray(value)) {
-      // تطبيع المصفوفات الداخلية
       doc[key] = value.map((item) => normalizeDocument(item));
     }
   }
@@ -141,10 +137,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(message || `API ${res.status}`, res.status, json);
   }
 
-  // تطبيق التطبيع على الاستجابة بأكملها
   const normalized = normalizeDocument(json);
   return normalized as T;
 }
+
+// ----- Upload -----
+export const UploadAPI = {
+  upload: async (file: File, token: string | null | undefined): Promise<string> => {
+    const t = ensureToken(token);
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${BASE_URL}/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${t}` },
+      body: form,
+    });
+    const json = await res.json();
+    if (!res.ok) throw new ApiError(json?.message ?? `API ${res.status}`, res.status, json);
+    return json.url as string;
+  },
+};
 
 // ----- Auth -----
 export const AuthAPI = {
@@ -178,11 +190,7 @@ export const UsersAPI = {
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateUserBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateUserBody, token: string | null | undefined) =>
     request<User>(`/users/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -218,11 +226,7 @@ export const HallsAPI = {
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateHallBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateHallBody, token: string | null | undefined) =>
     request<Hall>(`/halls/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -245,11 +249,7 @@ export const ServicesAPI = {
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateServiceBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateServiceBody, token: string | null | undefined) =>
     request<Service>(`/services/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -265,21 +265,13 @@ export const ServicesAPI = {
 // ----- Caterings per hall -----
 export const CateringsAPI = {
   list: (hallId: string) => request<Catering[]>(`/halls/${hallId}/caterings`),
-  create: (
-    hallId: string,
-    body: CreateCateringBody,
-    token: string | null | undefined,
-  ) =>
+  create: (hallId: string, body: CreateCateringBody, token: string | null | undefined) =>
     request<Catering>(`/halls/${hallId}/caterings`, {
       method: "POST",
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateCateringBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateCateringBody, token: string | null | undefined) =>
     request<Catering>(`/caterings/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -294,23 +286,14 @@ export const CateringsAPI = {
 
 // ----- Decorations per hall -----
 export const DecorationsAPI = {
-  list: (hallId: string) =>
-    request<Decoration[]>(`/halls/${hallId}/decorations`),
-  create: (
-    hallId: string,
-    body: CreateDecorationBody,
-    token: string | null | undefined,
-  ) =>
+  list: (hallId: string) => request<Decoration[]>(`/halls/${hallId}/decorations`),
+  create: (hallId: string, body: CreateDecorationBody, token: string | null | undefined) =>
     request<Decoration>(`/halls/${hallId}/decorations`, {
       method: "POST",
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateDecorationBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateDecorationBody, token: string | null | undefined) =>
     request<Decoration>(`/decorations/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -326,11 +309,7 @@ export const DecorationsAPI = {
 // ----- Cars per hall -----
 export const CarsAPI = {
   list: (hallId: string) => request<Car[]>(`/halls/${hallId}/cars`),
-  create: (
-    hallId: string,
-    body: CreateCarBody,
-    token: string | null | undefined,
-  ) =>
+  create: (hallId: string, body: CreateCarBody, token: string | null | undefined) =>
     request<Car>(`/halls/${hallId}/cars`, {
       method: "POST",
       headers: authHeaders(ensureToken(token)),
@@ -352,21 +331,13 @@ export const CarsAPI = {
 // ----- Music per hall -----
 export const MusicAPI = {
   list: (hallId: string) => request<Music[]>(`/halls/${hallId}/music`),
-  create: (
-    hallId: string,
-    body: CreateMusicBody,
-    token: string | null | undefined,
-  ) =>
+  create: (hallId: string, body: CreateMusicBody, token: string | null | undefined) =>
     request<Music>(`/halls/${hallId}/music`, {
       method: "POST",
       headers: authHeaders(ensureToken(token)),
       body: JSON.stringify(body),
     }),
-  update: (
-    id: string,
-    body: UpdateMusicBody,
-    token: string | null | undefined,
-  ) =>
+  update: (id: string, body: UpdateMusicBody, token: string | null | undefined) =>
     request<Music>(`/music/${id}`, {
       method: "PUT",
       headers: authHeaders(ensureToken(token)),
@@ -381,6 +352,10 @@ export const MusicAPI = {
 
 // ----- Bookings -----
 export const BookingsAPI = {
+  listAll: (token: string | null | undefined) =>
+    request<Booking[]>("/bookings", {
+      headers: authHeaders(ensureToken(token)),
+    }),
   create: (body: CreateBookingBody, token: string | null | undefined) =>
     request<Booking>("/bookings", {
       method: "POST",
@@ -395,11 +370,7 @@ export const BookingsAPI = {
     request<Booking>(`/bookings/${id}`, {
       headers: authHeaders(ensureToken(token)),
     }),
-  forHall: (
-    hallId: string,
-    status: Booking["status"] | undefined,
-    token: string | null | undefined,
-  ) =>
+  forHall: (hallId: string, status: Booking["status"] | undefined, token: string | null | undefined) =>
     request<Booking[]>(`/bookings/hall/${hallId}${buildQuery({ status })}`, {
       headers: authHeaders(ensureToken(token)),
     }),
@@ -416,6 +387,21 @@ export const BookingsAPI = {
   cancel: (id: string, token: string | null | undefined) =>
     request<Booking>(`/bookings/${id}/cancel`, {
       method: "PUT",
+      headers: authHeaders(ensureToken(token)),
+    }),
+  update: (
+    id: string,
+    body: Partial<CreateBookingBody> & { status?: Booking["status"]; total_price?: number },
+    token: string | null | undefined,
+  ) =>
+    request<Booking>(`/bookings/${id}`, {
+      method: "PUT",
+      headers: authHeaders(ensureToken(token)),
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string, token: string | null | undefined) =>
+    request<{ deleted: boolean }>(`/bookings/${id}`, {
+      method: "DELETE",
       headers: authHeaders(ensureToken(token)),
     }),
 };

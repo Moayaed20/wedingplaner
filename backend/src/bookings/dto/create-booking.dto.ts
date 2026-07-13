@@ -26,6 +26,11 @@ export class CreateBookingDto {
   @Type(() => Number)
   guest_count: number;
 
+  @ApiPropertyOptional({ example: '64cust1' })
+  @IsOptional()
+  @IsMongoId()
+  customer_id?: string;
+
   @ApiPropertyOptional({ type: [SelectedCateringDto] })
   @IsOptional()
   @IsArray()

@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -31,14 +32,22 @@ export class BookingsController {
     private readonly hallsService: HallsService,
   ) {}
 
+  @Get()
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'List all bookings (admin)' })
+  async findAll() {
+    return this.bookingsService.findAll();
+  }
+
   @Post()
-  @Roles(UserRole.CUSTOMER)
-  @ApiOperation({ summary: 'Create a new booking (customer)' })
-  async create(
-    @Body() dto: CreateBookingDto,
-    @CurrentUser() user: any,
-  ) {
-    return this.bookingsService.create(dto, user.userId);
+  @Roles(UserRole.CUSTOMER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Create a new booking (customer or admin)' })
+  async create(@Body() dto: CreateBookingDto, @CurrentUser() user: any) {
+    const customerId =
+      user.role === UserRole.ADMIN && dto.customer_id
+        ? dto.customer_id
+        : user.userId;
+    return this.bookingsService.create(dto, customerId);
   }
 
   @Get('mine')
@@ -86,6 +95,20 @@ export class BookingsController {
     return this.bookingsService.findByHall(hallId, status);
   }
 
+  @Put(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin update booking (status, date, guests, price, add-ons)' })
+  async adminUpdate(@Param('id') id: string, @Body() body: any) {
+    return this.bookingsService.adminUpdate(id, body);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin delete booking' })
+  async adminDelete(@Param('id') id: string) {
+    return this.bookingsService.adminDelete(id);
+  }
+
   @Put(':id/confirm')
   @Roles(UserRole.HALL_OWNER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Confirm a pending booking' })
@@ -120,7 +143,7 @@ export class BookingsController {
 
   @Put(':id/cancel')
   @Roles(UserRole.CUSTOMER)
-  @ApiOperation({ summary: 'Cancel pending booking (owner)' })
+  @ApiOperation({ summary: 'Cancel pending booking (customer)' })
   async cancel(@Param('id') id: string, @CurrentUser() user: any) {
     const booking = await this.bookingsService.findOne(id);
     if ((booking.customer_id as any).toString() !== user.userId) {

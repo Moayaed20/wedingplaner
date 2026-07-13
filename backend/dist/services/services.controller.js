@@ -20,6 +20,7 @@ const create_service_dto_1 = require("./dto/create-service.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
 let ServicesController = class ServicesController {
     constructor(servicesService) {
@@ -41,6 +42,7 @@ let ServicesController = class ServicesController {
 exports.ServicesController = ServicesController;
 __decorate([
     (0, common_1.Get)(),
+    (0, public_decorator_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'List global services (public)' }),
     (0, swagger_1.ApiQuery)({ name: 'type', required: false, example: 'photography' }),
     __param(0, (0, common_1.Query)('type')),

@@ -24,4 +24,8 @@ export declare class BookingsService {
     confirm(id: string): Promise<Booking>;
     reject(id: string): Promise<Booking>;
     cancel(id: string): Promise<Booking>;
+    adminUpdate(id: string, body: any): Promise<Booking>;
+    adminDelete(id: string): Promise<{
+        deleted: boolean;
+    }>;
 }

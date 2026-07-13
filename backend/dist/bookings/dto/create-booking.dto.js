@@ -35,6 +35,12 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateBookingDto.prototype, "guest_count", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: '64cust1' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsMongoId)(),
+    __metadata("design:type", String)
+], CreateBookingDto.prototype, "customer_id", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ type: [selected_catering_dto_1.SelectedCateringDto] }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),

@@ -15,6 +15,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { UserRole } from '../common/enums/user-role.enum';
 
 @ApiTags('services')
@@ -23,6 +24,7 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'List global services (public)' })
   @ApiQuery({ name: 'type', required: false, example: 'photography' })
   async findAll(@Query('type') type?: string) {

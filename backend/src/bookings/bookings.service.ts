@@ -241,4 +241,42 @@ export class BookingsService {
 
     return this.findOne(id);
   }
+
+  async adminUpdate(id: string, body: any): Promise<Booking> {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid booking id');
+    await this.bookingModel.findByIdAndUpdate(id, {
+      ...(body.status && { status: body.status }),
+      ...(body.event_date && { event_date: this.normalizeDate(body.event_date) }),
+      ...(body.guest_count && { guest_count: body.guest_count }),
+      ...(body.total_price !== undefined && { total_price: body.total_price }),
+      ...(body.selected_decoration_id !== undefined && {
+        selected_decoration_id: body.selected_decoration_id
+          ? new Types.ObjectId(body.selected_decoration_id)
+          : null,
+      }),
+      ...(body.selected_car_id !== undefined && {
+        selected_car_id: body.selected_car_id
+          ? new Types.ObjectId(body.selected_car_id)
+          : null,
+      }),
+      ...(body.selected_music_id !== undefined && {
+        selected_music_id: body.selected_music_id
+          ? new Types.ObjectId(body.selected_music_id)
+          : null,
+      }),
+    });
+    return this.findOne(id);
+  }
+
+  async adminDelete(id: string): Promise<{ deleted: boolean }> {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid booking id');
+    const booking = await this.bookingModel.findById(id);
+    if (!booking) throw new NotFoundException('Booking not found');
+    await this.hallsService.removeCalendarStatus(
+      (booking.hall_id as any).toString(),
+      this.normalizeDate(booking.event_date),
+    );
+    await this.bookingModel.findByIdAndDelete(id);
+    return { deleted: true };
+  }
 }

@@ -29,8 +29,14 @@ let BookingsController = class BookingsController {
         this.bookingsService = bookingsService;
         this.hallsService = hallsService;
     }
+    async findAll() {
+        return this.bookingsService.findAll();
+    }
     async create(dto, user) {
-        return this.bookingsService.create(dto, user.userId);
+        const customerId = user.role === user_role_enum_1.UserRole.ADMIN && dto.customer_id
+            ? dto.customer_id
+            : user.userId;
+        return this.bookingsService.create(dto, customerId);
     }
     async findMyBookings(userId) {
         return this.bookingsService.findByCustomer(userId);
@@ -58,6 +64,12 @@ let BookingsController = class BookingsController {
             }
         }
         return this.bookingsService.findByHall(hallId, status);
+    }
+    async adminUpdate(id, body) {
+        return this.bookingsService.adminUpdate(id, body);
+    }
+    async adminDelete(id) {
+        return this.bookingsService.adminDelete(id);
     }
     async confirm(id, user) {
         const booking = await this.bookingsService.findOne(id);
@@ -92,9 +104,17 @@ let BookingsController = class BookingsController {
 };
 exports.BookingsController = BookingsController;
 __decorate([
+    (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'List all bookings (admin)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "findAll", null);
+__decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CUSTOMER),
-    (0, swagger_1.ApiOperation)({ summary: 'Create a new booking (customer)' }),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CUSTOMER, user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new booking (customer or admin)' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
@@ -133,6 +153,25 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BookingsController.prototype, "findByHall", null);
 __decorate([
+    (0, common_1.Put)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Admin update booking (status, date, guests, price, add-ons)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "adminUpdate", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Admin delete booking' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "adminDelete", null);
+__decorate([
     (0, common_1.Put)(':id/confirm'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HALL_OWNER, user_role_enum_1.UserRole.ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Confirm a pending booking' }),
@@ -155,7 +194,7 @@ __decorate([
 __decorate([
     (0, common_1.Put)(':id/cancel'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CUSTOMER),
-    (0, swagger_1.ApiOperation)({ summary: 'Cancel pending booking (owner)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Cancel pending booking (customer)' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),

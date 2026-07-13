@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Building2, Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { RequireAuth } from "@/components/auth/require-auth";
@@ -10,11 +10,7 @@ import { useApi, useMutation } from "@/hooks/use-api";
 import { HallsAPI } from "@/lib/api";
 import { formatSYP } from "@/lib/utils";
 import type { Hall } from "@/lib/types";
-
-const navItems = [
-  { href: "/admin", label: "لوحة التحكم", icon: Building2 },
-  { href: "/admin/halls", label: "القاعات", icon: Building2 },
-];
+import { adminNavItems } from "@/components/admin/admin-nav-items";
 
 function HallsPage() {
   const router = useRouter();
@@ -40,7 +36,7 @@ function HallsPage() {
 
   return (
     <DashboardShell
-      navItems={navItems}
+      navItems={adminNavItems}
       userName="المشرف"
       userRoleLabel="إدارة القاعات"
     >

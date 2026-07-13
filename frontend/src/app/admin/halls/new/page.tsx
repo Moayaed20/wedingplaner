@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,7 @@ import { RequireAuth } from "@/components/auth/require-auth";
 import { useMutation } from "@/hooks/use-api";
 import { HallsAPI } from "@/lib/api";
 import type { CreateHallBody, Hall } from "@/lib/types";
-
-const navItems = [
-  { href: "/admin", label: "لوحة التحكم", icon: Building2 },
-  { href: "/admin/halls", label: "القاعات", icon: Building2 },
-];
+import { adminNavItems } from "@/components/admin/admin-nav-items";
 
 function NewHallPage() {
   const router = useRouter();
@@ -61,7 +57,7 @@ function NewHallPage() {
 
   return (
     <DashboardShell
-      navItems={navItems}
+      navItems={adminNavItems}
       userName="المشرف"
       userRoleLabel="إضافة قاعة جديدة"
     >

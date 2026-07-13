@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,7 @@ import { RequireAuth } from "@/components/auth/require-auth";
 import { useApi, useMutation } from "@/hooks/use-api";
 import { HallsAPI } from "@/lib/api";
 import type { CreateHallBody, Hall } from "@/lib/types";
-
-const navItems = [
-  { href: "/admin", label: "لوحة التحكم", icon: Building2 },
-  { href: "/admin/halls", label: "القاعات", icon: Building2 },
-];
+import { adminNavItems } from "@/components/admin/admin-nav-items";
 
 function EditHallPage() {
   const router = useRouter();
@@ -89,7 +85,7 @@ function EditHallPage() {
   if (loadingHall) {
     return (
       <DashboardShell
-        navItems={navItems}
+        navItems={adminNavItems}
         userName="المشرف"
         userRoleLabel="جاري التحميل..."
       >
@@ -102,7 +98,11 @@ function EditHallPage() {
 
   if (fetchError || !hall) {
     return (
-      <DashboardShell navItems={navItems} userName="المشرف" userRoleLabel="خطأ">
+      <DashboardShell
+        navItems={adminNavItems}
+        userName="المشرف"
+        userRoleLabel="خطأ"
+      >
         <p className="text-sm text-red-500">
           حدث خطأ أثناء تحميل البيانات: {fetchError}
         </p>
@@ -118,7 +118,7 @@ function EditHallPage() {
 
   return (
     <DashboardShell
-      navItems={navItems}
+      navItems={adminNavItems}
       userName="المشرف"
       userRoleLabel="تعديل القاعة"
     >

@@ -43,7 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Hydrate from localStorage on mount
   useEffect(() => {
     try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+      const raw =
+        typeof window !== "undefined"
+          ? localStorage.getItem(STORAGE_KEY)
+          : null;
       if (raw) {
         const parsed = JSON.parse(raw) as { token: string; user: User };
         setToken(parsed.token);
@@ -59,7 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const persist = useCallback((nextToken: string, nextUser: User) => {
     setToken(nextToken);
     setUser(nextUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: nextToken, user: nextUser }));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ token: nextToken, user: nextUser }),
+      );
+    }
   }, []);
 
   const login = useCallback(
@@ -71,13 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(res.message || "فشل تسجيل الدخول");
         }
         persist(res.token, res.user);
-        router.push(getDashboardPath(res.user.role));
+        const nextPath = getDashboardPath(res.user.role);
+        router.replace(nextPath);
         return res.user;
       } finally {
         setIsLoading(false);
       }
     },
-    [persist, router]
+    [persist, router],
   );
 
   const register = useCallback(
@@ -89,9 +98,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(res.message || "فشل إنشاء الحساب");
         }
         // After registration, login automatically
-        const loginRes = await AuthAPI.login({ email: body.email, password: body.password });
+        const loginRes = await AuthAPI.login({
+          email: body.email,
+          password: body.password,
+        });
         if (!loginRes.success || !loginRes.token || !loginRes.user) {
-          throw new Error(loginRes.message || "تم إنشاء الحساب لكن تعذر تسجيل الدخول");
+          throw new Error(
+            loginRes.message || "تم إنشاء الحساب لكن تعذر تسجيل الدخول",
+          );
         }
         persist(loginRes.token, loginRes.user);
         router.push(getDashboardPath(loginRes.user.role));
@@ -100,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [persist, router]
+    [persist, router],
   );
 
   const logout = useCallback(() => {
@@ -116,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const roles = Array.isArray(role) ? role : [role];
       return roles.includes(user.role);
     },
-    [user]
+    [user],
   );
 
   const value = useMemo(
@@ -130,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
     }),
-    [user, token, isLoading, isRole, login, register, logout]
+    [user, token, isLoading, isRole, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

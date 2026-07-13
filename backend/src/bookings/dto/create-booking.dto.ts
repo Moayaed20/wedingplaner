@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SelectedCateringDto } from './selected-catering.dto';
@@ -39,17 +40,17 @@ export class CreateBookingDto {
   selected_caterings?: SelectedCateringDto[];
 
   @ApiPropertyOptional({ example: '64deco1' })
-  @IsOptional()
+  @ValidateIf((o) => o.selected_decoration_id != null)
   @IsMongoId()
-  selected_decoration_id?: string;
+  selected_decoration_id?: string | null;
 
   @ApiPropertyOptional({ example: '64car1' })
-  @IsOptional()
+  @ValidateIf((o) => o.selected_car_id != null)
   @IsMongoId()
-  selected_car_id?: string;
+  selected_car_id?: string | null;
 
   @ApiPropertyOptional({ example: '64music1' })
-  @IsOptional()
+  @ValidateIf((o) => o.selected_music_id != null)
   @IsMongoId()
-  selected_music_id?: string;
+  selected_music_id?: string | null;
 }

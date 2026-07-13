@@ -50,19 +50,19 @@ __decorate([
 ], CreateBookingDto.prototype, "selected_caterings", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '64deco1' }),
-    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateIf)((o) => o.selected_decoration_id != null),
     (0, class_validator_1.IsMongoId)(),
     __metadata("design:type", String)
 ], CreateBookingDto.prototype, "selected_decoration_id", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '64car1' }),
-    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateIf)((o) => o.selected_car_id != null),
     (0, class_validator_1.IsMongoId)(),
     __metadata("design:type", String)
 ], CreateBookingDto.prototype, "selected_car_id", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '64music1' }),
-    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateIf)((o) => o.selected_music_id != null),
     (0, class_validator_1.IsMongoId)(),
     __metadata("design:type", String)
 ], CreateBookingDto.prototype, "selected_music_id", void 0);

@@ -185,25 +185,19 @@ export class BookingsService {
       throw new BadRequestException('Only pending bookings can be confirmed');
     }
 
+    const hallId = (booking.hall_id as any)._id
+      ? (booking.hall_id as any)._id.toString()
+      : (booking.hall_id as any).toString();
     const eventDate = this.normalizeDate(booking.event_date);
+
     if (
-      await this.hallsService.isDateBooked(
-        (booking.hall_id as any)._id.toString(),
-        eventDate,
-        [CalendarStatus.BOOKED],
-      )
+      await this.hallsService.isDateBooked(hallId, eventDate, [CalendarStatus.BOOKED])
     ) {
       throw new BadRequestException('This date is already booked by another event');
     }
 
-    booking.status = BookingStatus.CONFIRMED;
-    await booking.save();
-
-    await this.hallsService.setCalendarStatus(
-      (booking.hall_id as any)._id.toString(),
-      eventDate,
-      CalendarStatus.BOOKED,
-    );
+    await this.bookingModel.findByIdAndUpdate(id, { status: BookingStatus.CONFIRMED });
+    await this.hallsService.setCalendarStatus(hallId, eventDate, CalendarStatus.BOOKED);
 
     return this.findOne(id);
   }
@@ -214,13 +208,12 @@ export class BookingsService {
       throw new BadRequestException('Booking already rejected');
     }
 
-    booking.status = BookingStatus.REJECTED;
-    await booking.save();
+    const hallId = (booking.hall_id as any)._id
+      ? (booking.hall_id as any)._id.toString()
+      : (booking.hall_id as any).toString();
 
-    await this.hallsService.removeCalendarStatus(
-      (booking.hall_id as any)._id.toString(),
-      this.normalizeDate(booking.event_date),
-    );
+    await this.bookingModel.findByIdAndUpdate(id, { status: BookingStatus.REJECTED });
+    await this.hallsService.removeCalendarStatus(hallId, this.normalizeDate(booking.event_date));
 
     return this.findOne(id);
   }
@@ -231,13 +224,12 @@ export class BookingsService {
       throw new BadRequestException('Only pending bookings can be cancelled');
     }
 
-    booking.status = BookingStatus.CANCELLED;
-    await booking.save();
+    const hallId = (booking.hall_id as any)._id
+      ? (booking.hall_id as any)._id.toString()
+      : (booking.hall_id as any).toString();
 
-    await this.hallsService.removeCalendarStatus(
-      (booking.hall_id as any)._id.toString(),
-      this.normalizeDate(booking.event_date),
-    );
+    await this.bookingModel.findByIdAndUpdate(id, { status: BookingStatus.CANCELLED });
+    await this.hallsService.removeCalendarStatus(hallId, this.normalizeDate(booking.event_date));
 
     return this.findOne(id);
   }

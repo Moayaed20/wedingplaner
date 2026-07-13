@@ -164,13 +164,15 @@ let BookingsService = class BookingsService {
         if (booking.status !== booking_status_enum_1.BookingStatus.PENDING) {
             throw new common_1.BadRequestException('Only pending bookings can be confirmed');
         }
+        const hallId = booking.hall_id._id
+            ? booking.hall_id._id.toString()
+            : booking.hall_id.toString();
         const eventDate = this.normalizeDate(booking.event_date);
-        if (await this.hallsService.isDateBooked(booking.hall_id._id.toString(), eventDate, [calendar_status_enum_1.CalendarStatus.BOOKED])) {
+        if (await this.hallsService.isDateBooked(hallId, eventDate, [calendar_status_enum_1.CalendarStatus.BOOKED])) {
             throw new common_1.BadRequestException('This date is already booked by another event');
         }
-        booking.status = booking_status_enum_1.BookingStatus.CONFIRMED;
-        await booking.save();
-        await this.hallsService.setCalendarStatus(booking.hall_id._id.toString(), eventDate, calendar_status_enum_1.CalendarStatus.BOOKED);
+        await this.bookingModel.findByIdAndUpdate(id, { status: booking_status_enum_1.BookingStatus.CONFIRMED });
+        await this.hallsService.setCalendarStatus(hallId, eventDate, calendar_status_enum_1.CalendarStatus.BOOKED);
         return this.findOne(id);
     }
     async reject(id) {
@@ -178,9 +180,11 @@ let BookingsService = class BookingsService {
         if (booking.status === booking_status_enum_1.BookingStatus.REJECTED) {
             throw new common_1.BadRequestException('Booking already rejected');
         }
-        booking.status = booking_status_enum_1.BookingStatus.REJECTED;
-        await booking.save();
-        await this.hallsService.removeCalendarStatus(booking.hall_id._id.toString(), this.normalizeDate(booking.event_date));
+        const hallId = booking.hall_id._id
+            ? booking.hall_id._id.toString()
+            : booking.hall_id.toString();
+        await this.bookingModel.findByIdAndUpdate(id, { status: booking_status_enum_1.BookingStatus.REJECTED });
+        await this.hallsService.removeCalendarStatus(hallId, this.normalizeDate(booking.event_date));
         return this.findOne(id);
     }
     async cancel(id) {
@@ -188,9 +192,11 @@ let BookingsService = class BookingsService {
         if (booking.status !== booking_status_enum_1.BookingStatus.PENDING) {
             throw new common_1.BadRequestException('Only pending bookings can be cancelled');
         }
-        booking.status = booking_status_enum_1.BookingStatus.CANCELLED;
-        await booking.save();
-        await this.hallsService.removeCalendarStatus(booking.hall_id._id.toString(), this.normalizeDate(booking.event_date));
+        const hallId = booking.hall_id._id
+            ? booking.hall_id._id.toString()
+            : booking.hall_id.toString();
+        await this.bookingModel.findByIdAndUpdate(id, { status: booking_status_enum_1.BookingStatus.CANCELLED });
+        await this.hallsService.removeCalendarStatus(hallId, this.normalizeDate(booking.event_date));
         return this.findOne(id);
     }
     async adminUpdate(id, body) {

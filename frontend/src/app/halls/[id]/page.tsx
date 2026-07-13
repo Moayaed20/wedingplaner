@@ -67,21 +67,20 @@ export default function HallDetailPage() {
   const [reviewText, setReviewText] = useState("");
 
   const { mutate: createBooking, isLoading: bookingLoading } = useMutation<Booking, void>(
-    (_, t) =>
-      BookingsAPI.create(
-        {
-          hall_id: hallId,
-          event_date: eventDate,
-          guest_count: Number(guestCount),
-          selected_caterings: Object.entries(selectedCateringIds)
-            .filter(([, q]) => q > 0)
-            .map(([id, quantity]) => ({ catering_id: id, quantity })),
-          selected_decoration_id: selectedDecorationId || undefined,
-          selected_car_id: selectedCarId || undefined,
-          selected_music_id: selectedMusicId || undefined,
-        },
-        t!
-      )
+    (_, t) => {
+      const body: any = {
+        hall_id: hallId,
+        event_date: eventDate,
+        guest_count: Number(guestCount),
+        selected_caterings: Object.entries(selectedCateringIds)
+          .filter(([, q]) => q > 0)
+          .map(([id, quantity]) => ({ catering_id: id, quantity })),
+      };
+      if (selectedDecorationId) body.selected_decoration_id = selectedDecorationId;
+      if (selectedCarId) body.selected_car_id = selectedCarId;
+      if (selectedMusicId) body.selected_music_id = selectedMusicId;
+      return BookingsAPI.create(body, t!);
+    }
   );
 
   const { mutate: createReview } = useMutation<Review, void>((_, t) =>

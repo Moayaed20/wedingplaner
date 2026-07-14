@@ -55,17 +55,17 @@ __decorate([
     __metadata("design:type", Array)
 ], Booking.prototype, "selected_caterings", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'Decoration', default: null }),
-    __metadata("design:type", mongoose_2.Types.ObjectId)
-], Booking.prototype, "selected_decoration_id", void 0);
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.Types.ObjectId, ref: 'Decoration' }], default: [] }),
+    __metadata("design:type", Array)
+], Booking.prototype, "selected_decoration_ids", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'Car', default: null }),
     __metadata("design:type", mongoose_2.Types.ObjectId)
 ], Booking.prototype, "selected_car_id", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'Music', default: null }),
-    __metadata("design:type", mongoose_2.Types.ObjectId)
-], Booking.prototype, "selected_music_id", void 0);
+    (0, mongoose_1.Prop)({ type: [{ type: mongoose_2.Types.ObjectId, ref: 'Music' }], default: [] }),
+    __metadata("design:type", Array)
+], Booking.prototype, "selected_music_ids", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ default: null }),
     __metadata("design:type", String)

@@ -41,6 +41,18 @@ let BookingsController = class BookingsController {
     async findMyBookings(userId) {
         return this.bookingsService.findByCustomer(userId);
     }
+    async findByHall(hallId, user, status) {
+        if (user.role === user_role_enum_1.UserRole.HALL_OWNER) {
+            const hall = await this.hallsService.findOne(hallId);
+            const ownerId = hall.owner_id?._id
+                ? hall.owner_id._id.toString()
+                : hall.owner_id?.toString();
+            if (ownerId !== user.userId) {
+                throw new common_1.ForbiddenException('You can only view bookings for your own halls');
+            }
+        }
+        return this.bookingsService.findByHall(hallId, status);
+    }
     async findOne(id, user) {
         const booking = await this.bookingsService.findOne(id);
         if (user.role === user_role_enum_1.UserRole.CUSTOMER) {
@@ -56,15 +68,6 @@ let BookingsController = class BookingsController {
         }
         return booking;
     }
-    async findByHall(hallId, user, status) {
-        if (user.role === user_role_enum_1.UserRole.HALL_OWNER) {
-            const hall = await this.hallsService.findOne(hallId);
-            if (hall.owner_id?.toString() !== user.userId) {
-                throw new common_1.ForbiddenException('You can only view bookings for your own halls');
-            }
-        }
-        return this.bookingsService.findByHall(hallId, status);
-    }
     async adminUpdate(id, body) {
         return this.bookingsService.adminUpdate(id, body);
     }
@@ -74,20 +77,28 @@ let BookingsController = class BookingsController {
     async confirm(id, user) {
         const booking = await this.bookingsService.findOne(id);
         if (user.role === user_role_enum_1.UserRole.HALL_OWNER) {
-            const hall = await this.hallsService.findOne(booking.hall_id.toString());
-            if (hall.owner_id?.toString() !== user.userId) {
+            const hall = await this.hallsService.findOne(booking.hall_id?._id
+                ? booking.hall_id._id.toString()
+                : booking.hall_id.toString());
+            const ownerId = hall.owner_id?._id
+                ? hall.owner_id._id.toString()
+                : hall.owner_id?.toString();
+            if (ownerId !== user.userId)
                 throw new common_1.ForbiddenException('Access denied');
-            }
         }
         return this.bookingsService.confirm(id);
     }
     async reject(id, user) {
         const booking = await this.bookingsService.findOne(id);
         if (user.role === user_role_enum_1.UserRole.HALL_OWNER) {
-            const hall = await this.hallsService.findOne(booking.hall_id.toString());
-            if (hall.owner_id?.toString() !== user.userId) {
+            const hall = await this.hallsService.findOne(booking.hall_id?._id
+                ? booking.hall_id._id.toString()
+                : booking.hall_id.toString());
+            const ownerId = hall.owner_id?._id
+                ? hall.owner_id._id.toString()
+                : hall.owner_id?.toString();
+            if (ownerId !== user.userId)
                 throw new common_1.ForbiddenException('Access denied');
-            }
         }
         return this.bookingsService.reject(id);
     }
@@ -131,16 +142,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BookingsController.prototype, "findMyBookings", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CUSTOMER, user_role_enum_1.UserRole.HALL_OWNER, user_role_enum_1.UserRole.ADMIN),
-    (0, swagger_1.ApiOperation)({ summary: 'Get single booking by id' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
-], BookingsController.prototype, "findOne", null);
-__decorate([
     (0, common_1.Get)('hall/:hallId'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HALL_OWNER, user_role_enum_1.UserRole.ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'List bookings for a hall' }),
@@ -152,6 +153,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, String]),
     __metadata("design:returntype", Promise)
 ], BookingsController.prototype, "findByHall", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.CUSTOMER, user_role_enum_1.UserRole.HALL_OWNER, user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Get single booking by id' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BookingsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),

@@ -18,9 +18,12 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const review_schema_1 = require("./schemas/review.schema");
 const halls_service_1 = require("../halls/halls.service");
+const booking_schema_1 = require("../bookings/schemas/booking.schema");
+const booking_status_enum_1 = require("../common/enums/booking-status.enum");
 let ReviewsService = class ReviewsService {
-    constructor(reviewModel, hallsService) {
+    constructor(reviewModel, bookingModel, hallsService) {
         this.reviewModel = reviewModel;
+        this.bookingModel = bookingModel;
         this.hallsService = hallsService;
     }
     async findByHall(hallId) {
@@ -47,6 +50,21 @@ let ReviewsService = class ReviewsService {
     }
     async create(dto, userId) {
         await this.hallsService.findOne(dto.hall_id);
+        const confirmedBooking = await this.bookingModel.findOne({
+            customer_id: new mongoose_2.Types.ObjectId(userId),
+            hall_id: new mongoose_2.Types.ObjectId(dto.hall_id),
+            status: booking_status_enum_1.BookingStatus.CONFIRMED,
+        });
+        if (!confirmedBooking) {
+            throw new common_1.BadRequestException('يجب أن يكون لديك حجز مؤكد لهذه الصالة قبل التقييم');
+        }
+        const existing = await this.reviewModel.findOne({
+            user_id: new mongoose_2.Types.ObjectId(userId),
+            hall_id: new mongoose_2.Types.ObjectId(dto.hall_id),
+        });
+        if (existing) {
+            throw new common_1.BadRequestException('لقد قيّمت هذه الصالة مسبقاً');
+        }
         const created = new this.reviewModel({
             user_id: new mongoose_2.Types.ObjectId(userId),
             hall_id: new mongoose_2.Types.ObjectId(dto.hall_id),
@@ -71,7 +89,9 @@ exports.ReviewsService = ReviewsService;
 exports.ReviewsService = ReviewsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(review_schema_1.Review.name)),
+    __param(1, (0, mongoose_1.InjectModel)(booking_schema_1.Booking.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
+        mongoose_2.Model,
         halls_service_1.HallsService])
 ], ReviewsService);
 //# sourceMappingURL=reviews.service.js.map

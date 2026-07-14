@@ -57,6 +57,27 @@ export class BookingsController {
     return this.bookingsService.findByCustomer(userId);
   }
 
+  @Get('hall/:hallId')
+  @Roles(UserRole.HALL_OWNER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'List bookings for a hall' })
+  @ApiQuery({ name: 'status', enum: BookingStatus, required: false })
+  async findByHall(
+    @Param('hallId') hallId: string,
+    @CurrentUser() user: any,
+    @Query('status') status?: BookingStatus,
+  ) {
+    if (user.role === UserRole.HALL_OWNER) {
+      const hall = await this.hallsService.findOne(hallId);
+      const ownerId = (hall.owner_id as any)?._id
+        ? (hall.owner_id as any)._id.toString()
+        : (hall.owner_id as any)?.toString();
+      if (ownerId !== user.userId) {
+        throw new ForbiddenException('You can only view bookings for your own halls');
+      }
+    }
+    return this.bookingsService.findByHall(hallId, status);
+  }
+
   @Get(':id')
   @Roles(UserRole.CUSTOMER, UserRole.HALL_OWNER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get single booking by id' })
@@ -75,24 +96,6 @@ export class BookingsController {
       }
     }
     return booking;
-  }
-
-  @Get('hall/:hallId')
-  @Roles(UserRole.HALL_OWNER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'List bookings for a hall' })
-  @ApiQuery({ name: 'status', enum: BookingStatus, required: false })
-  async findByHall(
-    @Param('hallId') hallId: string,
-    @CurrentUser() user: any,
-    @Query('status') status?: BookingStatus,
-  ) {
-    if (user.role === UserRole.HALL_OWNER) {
-      const hall = await this.hallsService.findOne(hallId);
-      if ((hall.owner_id as any)?.toString() !== user.userId) {
-        throw new ForbiddenException('You can only view bookings for your own halls');
-      }
-    }
-    return this.bookingsService.findByHall(hallId, status);
   }
 
   @Put(':id')
@@ -116,11 +119,14 @@ export class BookingsController {
     const booking = await this.bookingsService.findOne(id);
     if (user.role === UserRole.HALL_OWNER) {
       const hall = await this.hallsService.findOne(
-        (booking.hall_id as any).toString(),
+        (booking.hall_id as any)?._id
+          ? (booking.hall_id as any)._id.toString()
+          : (booking.hall_id as any).toString(),
       );
-      if ((hall.owner_id as any)?.toString() !== user.userId) {
-        throw new ForbiddenException('Access denied');
-      }
+      const ownerId = (hall.owner_id as any)?._id
+        ? (hall.owner_id as any)._id.toString()
+        : (hall.owner_id as any)?.toString();
+      if (ownerId !== user.userId) throw new ForbiddenException('Access denied');
     }
     return this.bookingsService.confirm(id);
   }
@@ -132,11 +138,14 @@ export class BookingsController {
     const booking = await this.bookingsService.findOne(id);
     if (user.role === UserRole.HALL_OWNER) {
       const hall = await this.hallsService.findOne(
-        (booking.hall_id as any).toString(),
+        (booking.hall_id as any)?._id
+          ? (booking.hall_id as any)._id.toString()
+          : (booking.hall_id as any).toString(),
       );
-      if ((hall.owner_id as any)?.toString() !== user.userId) {
-        throw new ForbiddenException('Access denied');
-      }
+      const ownerId = (hall.owner_id as any)?._id
+        ? (hall.owner_id as any)._id.toString()
+        : (hall.owner_id as any)?.toString();
+      if (ownerId !== user.userId) throw new ForbiddenException('Access denied');
     }
     return this.bookingsService.reject(id);
   }

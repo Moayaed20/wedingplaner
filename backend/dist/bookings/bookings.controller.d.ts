@@ -9,8 +9,8 @@ export declare class BookingsController {
     findAll(): Promise<import("./schemas/booking.schema").Booking[]>;
     create(dto: CreateBookingDto, user: any): Promise<import("./schemas/booking.schema").Booking>;
     findMyBookings(userId: string): Promise<import("./schemas/booking.schema").Booking[]>;
-    findOne(id: string, user: any): Promise<import("./schemas/booking.schema").Booking>;
     findByHall(hallId: string, user: any, status?: BookingStatus): Promise<import("./schemas/booking.schema").Booking[]>;
+    findOne(id: string, user: any): Promise<import("./schemas/booking.schema").Booking>;
     adminUpdate(id: string, body: any): Promise<import("./schemas/booking.schema").Booking>;
     adminDelete(id: string): Promise<{
         deleted: boolean;

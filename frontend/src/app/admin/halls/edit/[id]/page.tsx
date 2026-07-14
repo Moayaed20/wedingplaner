@@ -51,6 +51,7 @@ function AddonSection<T extends { id: string }, C, U extends Partial<C>>({
   renderRow,
   renderForm,
   emptyForm,
+  toForm,
   onCreate,
   onUpdate,
   onDelete,
@@ -66,6 +67,7 @@ function AddonSection<T extends { id: string }, C, U extends Partial<C>>({
     isEdit: boolean,
   ) => React.ReactNode;
   emptyForm: C;
+  toForm: (item: T) => C;
   onCreate: (form: C) => Promise<void>;
   onUpdate: (id: string, form: C) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -115,7 +117,7 @@ function AddonSection<T extends { id: string }, C, U extends Partial<C>>({
                         className="rounded-full h-7 w-7 p-0"
                         onClick={() => {
                           setEditItem(item);
-                          setEditForm({ ...emptyForm, ...(item as unknown as C) });
+                          setEditForm(toForm(item));
                         }}
                       >
                         <Pencil className="h-3 w-3 text-blue-500" />
@@ -583,6 +585,13 @@ function EditHallPage() {
               description: "",
               images: [],
             }}
+            toForm={(c) => ({
+              menu_name: c.menu_name,
+              price_per_person: c.price_per_person,
+              menu_type: c.menu_type,
+              description: c.description ?? "",
+              images: c.images ?? [],
+            })}
             renderRow={(c) => (
               <span className="flex items-center gap-3">
                 {c.images?.[0] && (
@@ -696,6 +705,12 @@ function EditHallPage() {
               description: "",
               images: [],
             }}
+            toForm={(d) => ({
+              theme_name: d.theme_name,
+              price: d.price,
+              description: d.description ?? "",
+              images: d.images ?? [],
+            })}
             renderRow={(d) => (
               <span className="flex items-center gap-3">
                 {d.images?.[0] && (
@@ -790,6 +805,14 @@ function EditHallPage() {
               description: "",
               images: [],
             }}
+            toForm={(c) => ({
+              car_name: c.car_name,
+              model: c.model,
+              price: c.price,
+              capacity: c.capacity,
+              description: c.description ?? "",
+              images: c.images ?? [],
+            })}
             renderRow={(c) => (
               <span className="flex items-center gap-3">
                 {c.images?.[0] && (
@@ -911,6 +934,12 @@ function EditHallPage() {
             items={music ?? []}
             loading={loadingMus}
             emptyForm={{ name: "", type: "", price: 0, description: "" }}
+            toForm={(m) => ({
+              name: m.name,
+              type: m.type,
+              price: m.price,
+              description: m.description ?? "",
+            })}
             renderRow={(m) => (
               <span>
                 <span className="font-medium">{m.name}</span>

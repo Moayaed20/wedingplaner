@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/enums/user-role.enum';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('music')
 @ApiBearerAuth()
@@ -23,6 +24,7 @@ export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
   @Get('halls/:hallId/music')
+  @Public()
   @ApiOperation({ summary: 'List music options for a hall (public)' })
   async findByHall(@Param('hallId') hallId: string) {
     return this.musicService.findByHall(hallId);

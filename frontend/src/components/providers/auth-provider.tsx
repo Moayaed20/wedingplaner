@@ -31,7 +31,7 @@ const STORAGE_KEY = "weddingbook-auth";
 function getDashboardPath(role: Role): string {
   if (role === "admin") return "/admin";
   if (role === "hall_owner") return "/owner";
-  return "/dashboard";
+  return "/halls";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

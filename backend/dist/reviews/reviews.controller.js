@@ -22,6 +22,7 @@ const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 let ReviewsController = class ReviewsController {
     constructor(reviewsService) {
         this.reviewsService = reviewsService;
@@ -45,6 +46,7 @@ let ReviewsController = class ReviewsController {
 exports.ReviewsController = ReviewsController;
 __decorate([
     (0, common_1.Get)('halls/:hallId/reviews'),
+    (0, public_decorator_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'List reviews for a hall (public)' }),
     __param(0, (0, common_1.Param)('hallId')),
     __metadata("design:type", Function),

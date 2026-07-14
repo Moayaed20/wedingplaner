@@ -16,9 +16,9 @@ export declare class Booking {
         price_per_person: number;
         total: number;
     }[];
-    selected_decoration_id: Types.ObjectId | null;
+    selected_decoration_ids: Types.ObjectId[];
     selected_car_id: Types.ObjectId | null;
-    selected_music_id: Types.ObjectId | null;
+    selected_music_ids: Types.ObjectId[];
     qr_code: string | null;
 }
 export declare const BookingSchema: import("mongoose").Schema<Booking, import("mongoose").Model<Booking, any, any, any, import("mongoose").Document<unknown, any, Booking, any, {}> & Booking & Required<{

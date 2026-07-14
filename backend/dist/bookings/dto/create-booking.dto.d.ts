@@ -5,7 +5,7 @@ export declare class CreateBookingDto {
     guest_count: number;
     customer_id?: string;
     selected_caterings?: SelectedCateringDto[];
-    selected_decoration_id?: string | null;
+    selected_decoration_ids?: string[];
     selected_car_id?: string | null;
-    selected_music_id?: string | null;
+    selected_music_ids?: string[];
 }

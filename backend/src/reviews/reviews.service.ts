@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Review } from './schemas/review.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { HallsService } from '../halls/halls.service';
+import { Booking } from '../bookings/schemas/booking.schema';
+import { BookingStatus } from '../common/enums/booking-status.enum';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectModel(Review.name) private reviewModel: Model<Review>,
+    @InjectModel(Booking.name) private bookingModel: Model<Booking>,
     private readonly hallsService: HallsService,
   ) {}
 
@@ -37,6 +40,25 @@ export class ReviewsService {
 
   async create(dto: CreateReviewDto, userId: string): Promise<Review> {
     await this.hallsService.findOne(dto.hall_id);
+
+    // Must have a confirmed booking for this hall
+    const confirmedBooking = await this.bookingModel.findOne({
+      customer_id: new Types.ObjectId(userId),
+      hall_id: new Types.ObjectId(dto.hall_id),
+      status: BookingStatus.CONFIRMED,
+    });
+    if (!confirmedBooking) {
+      throw new BadRequestException('يجب أن يكون لديك حجز مؤكد لهذه الصالة قبل التقييم');
+    }
+
+    // One review per user per hall
+    const existing = await this.reviewModel.findOne({
+      user_id: new Types.ObjectId(userId),
+      hall_id: new Types.ObjectId(dto.hall_id),
+    });
+    if (existing) {
+      throw new BadRequestException('لقد قيّمت هذه الصالة مسبقاً');
+    }
 
     const created = new this.reviewModel({
       user_id: new Types.ObjectId(userId),

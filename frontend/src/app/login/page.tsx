@@ -2,7 +2,6 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +10,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
-  const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || undefined;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,9 +20,6 @@ export default function LoginPage() {
     setError(null);
     try {
       await login({ email, password });
-      if (returnUrl) {
-        window.location.assign(returnUrl);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "فشل تسجيل الدخول");
     }

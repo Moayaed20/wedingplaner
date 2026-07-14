@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Trash2, Pencil, Plus } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Users, Trash2, Pencil, Plus, Search } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,19 @@ function UsersPage() {
     role: "customer" as Role,
     phone: "",
   });
+
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (users ?? []).filter((u) => {
+      const matchSearch =
+        !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const matchRole = !roleFilter || u.role === roleFilter;
+      return matchSearch && matchRole;
+    });
+  }, [users, search, roleFilter]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المستخدم؟")) return;
@@ -135,12 +148,30 @@ function UsersPage() {
       userName="المشرف"
       userRoleLabel="إدارة المستخدمين"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-extrabold text-ink">المستخدمون</h2>
-        <Button
-          className="rounded-full"
-          onClick={() => setIsAddModalOpen(true)}
-        >
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative min-w-[180px] flex-1">
+            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="بحث بالاسم أو البريد..."
+              className="w-full rounded-full border border-border py-2 pr-9 pl-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="rounded-full border border-border px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <option value="">كل الأدوار</option>
+            <option value="admin">مدير</option>
+            <option value="hall_owner">مالك قاعة</option>
+            <option value="customer">عميل</option>
+          </select>
+        </div>
+        <Button className="rounded-full" onClick={() => setIsAddModalOpen(true)}>
           <Plus className="h-4 w-4" />
           إضافة مستخدم
         </Button>
@@ -160,7 +191,7 @@ function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {(users ?? []).map((u) => (
+            {filtered.map((u) => (
               <tr key={u.id} className="border-t border-border">
                 <td className="px-5 py-3 font-semibold text-ink">{u.name}</td>
                 <td className="px-5 py-3 text-ink/80">{u.email}</td>

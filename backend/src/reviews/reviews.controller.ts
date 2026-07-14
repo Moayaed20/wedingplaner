@@ -17,6 +17,8 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserRole } from '../common/enums/user-role.enum';
 
+import { Public } from '../common/decorators/public.decorator';
+
 @ApiTags('reviews')
 @ApiBearerAuth()
 @Controller({})
@@ -24,6 +26,7 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Get('halls/:hallId/reviews')
+  @Public()
   @ApiOperation({ summary: 'List reviews for a hall (public)' })
   async findByHall(@Param('hallId') hallId: string) {
     return this.reviewsService.findByHall(hallId);

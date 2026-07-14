@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarCheck, Plus, Pencil, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { CalendarCheck, Plus, Pencil, Trash2, Search } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { BookingStatusBadge } from "@/components/booking-status-badge";
 import { Button } from "@/components/ui/button";
@@ -47,12 +47,16 @@ type EditForm = {
   guest_count: number;
   status: BookingStatus;
   total_price: number;
-  selected_decoration_id: string;
+  selected_decoration_ids: string[];
   selected_car_id: string;
-  selected_music_id: string;
+  selected_music_ids: string[];
 };
 
-type CreateForm = CreateBookingBody & { customer_id: string };
+type CreateForm = CreateBookingBody & { 
+  customer_id: string;
+  selected_decoration_ids?: string[];
+  selected_music_ids?: string[];
+};
 
 type Addons = {
   caterings: Catering[];
@@ -139,9 +143,9 @@ function BookingsPage() {
     guest_count: 1,
     status: BookingStatus.PENDING,
     total_price: 0,
-    selected_decoration_id: "",
+    selected_decoration_ids: [],
     selected_car_id: "",
-    selected_music_id: "",
+    selected_music_ids: [],
   });
   const [editError, setEditError] = useState<string | null>(null);
   const [editAddons, setEditAddons] = useState<Addons>(emptyAddons);
@@ -161,9 +165,9 @@ function BookingsPage() {
       guest_count: b.guest_count,
       status: b.status,
       total_price: b.total_price,
-      selected_decoration_id: (b.selected_decoration_id as string) ?? "",
+      selected_decoration_ids: Array.isArray(b.selected_decoration_ids) ? b.selected_decoration_ids : [],
       selected_car_id: (b.selected_car_id as string) ?? "",
-      selected_music_id: (b.selected_music_id as string) ?? "",
+      selected_music_ids: Array.isArray(b.selected_music_ids) ? b.selected_music_ids : [],
     });
     setEditError(null);
     const hallId = (b.hall_id as string) || b.hall?.id || "";
@@ -184,19 +188,21 @@ function BookingsPage() {
     ea: Addons,
   ) => {
     let total = (hall?.price_per_person ?? 0) * form.guest_count;
-    if (form.selected_decoration_id) {
-      const d = ea.decorations.find(
-        (x) => x.id === form.selected_decoration_id,
-      );
-      if (d) total += d.price;
+    if (form.selected_decoration_ids.length > 0) {
+      for (const decoId of form.selected_decoration_ids) {
+        const d = ea.decorations.find((x) => x.id === decoId);
+        if (d) total += d.price;
+      }
     }
     if (form.selected_car_id) {
       const c = ea.cars.find((x) => x.id === form.selected_car_id);
       if (c) total += c.price;
     }
-    if (form.selected_music_id) {
-      const m = ea.music.find((x) => x.id === form.selected_music_id);
-      if (m) total += m.price;
+    if (form.selected_music_ids.length > 0) {
+      for (const musicId of form.selected_music_ids) {
+        const m = ea.music.find((x) => x.id === musicId);
+        if (m) total += m.price;
+      }
     }
     return total;
   };
@@ -210,9 +216,9 @@ function BookingsPage() {
       guest_count: editForm.guest_count,
       status: editForm.status,
       total_price: editForm.total_price,
-      selected_decoration_id: editForm.selected_decoration_id || null,
+      selected_decoration_ids: editForm.selected_decoration_ids,
       selected_car_id: editForm.selected_car_id || null,
-      selected_music_id: editForm.selected_music_id || null,
+      selected_music_ids: editForm.selected_music_ids,
     };
     const result = await updateMutate({ id: editBooking.id, body });
     if (result) {
@@ -228,26 +234,30 @@ function BookingsPage() {
     event_date: "",
     guest_count: 1,
     customer_id: "",
-    selected_decoration_id: "",
+    selected_decoration_ids: [],
     selected_car_id: "",
-    selected_music_id: "",
+    selected_music_ids: [],
   });
   const [createError, setCreateError] = useState<string | null>(null);
 
   const recalcCreate = (form: CreateForm, a: Addons) => {
     const hall = getHall(form.hall_id);
     let total = (hall?.price_per_person ?? 0) * form.guest_count;
-    if (form.selected_decoration_id) {
-      const d = a.decorations.find((x) => x.id === form.selected_decoration_id);
-      if (d) total += d.price;
+    if (form.selected_decoration_ids && form.selected_decoration_ids.length > 0) {
+      for (const decoId of form.selected_decoration_ids) {
+        const d = a.decorations.find((x) => x.id === decoId);
+        if (d) total += d.price;
+      }
     }
     if (form.selected_car_id) {
       const c = a.cars.find((x) => x.id === form.selected_car_id);
       if (c) total += c.price;
     }
-    if (form.selected_music_id) {
-      const m = a.music.find((x) => x.id === form.selected_music_id);
-      if (m) total += m.price;
+    if (form.selected_music_ids && form.selected_music_ids.length > 0) {
+      for (const musicId of form.selected_music_ids) {
+        const m = a.music.find((x) => x.id === musicId);
+        if (m) total += m.price;
+      }
     }
     return total;
   };
@@ -267,9 +277,9 @@ function BookingsPage() {
       customer_id: createForm.customer_id,
       selected_caterings: createForm.selected_caterings ?? [],
     };
-    if (createForm.selected_decoration_id) body.selected_decoration_id = createForm.selected_decoration_id;
+    if (createForm.selected_decoration_ids && createForm.selected_decoration_ids.length > 0) body.selected_decoration_ids = createForm.selected_decoration_ids;
     if (createForm.selected_car_id) body.selected_car_id = createForm.selected_car_id;
-    if (createForm.selected_music_id) body.selected_music_id = createForm.selected_music_id;
+    if (createForm.selected_music_ids && createForm.selected_music_ids.length > 0) body.selected_music_ids = createForm.selected_music_ids;
     const result = await createMutate(body);
     if (result) {
       setShowCreate(false);
@@ -289,25 +299,84 @@ function BookingsPage() {
   const createCost = recalcCreate(createForm, addons);
   const editCost = recalcEdit(editForm, editHall, editAddons);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (allBookings ?? []).filter((b) => {
+      const matchSearch =
+        !q ||
+        b.hall?.name?.toLowerCase().includes(q) ||
+        b.customer?.name?.toLowerCase().includes(q);
+      const matchStatus = !statusFilter || b.status === statusFilter;
+      const date = b.event_date?.slice(0, 10) ?? "";
+      const matchFrom = !dateFrom || date >= dateFrom;
+      const matchTo = !dateTo || date <= dateTo;
+      return matchSearch && matchStatus && matchFrom && matchTo;
+    });
+  }, [allBookings, search, statusFilter, dateFrom, dateTo]);
+
   return (
     <DashboardShell
       navItems={navItems}
       userName="المشرف"
       userRoleLabel="جميع الحجوزات"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-extrabold text-ink">الحجوزات</h2>
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative min-w-[180px] flex-1">
+            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="بحث بالقاعة أو العميل..."
+              className="w-full rounded-full border border-border py-2 pr-9 pl-4 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="rounded-full border border-border px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            title="من تاريخ"
+          />
+          <span className="text-sm text-muted-foreground">—</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="rounded-full border border-border px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            title="إلى تاريخ"
+          />
+        </div>
         <Button
           className="rounded-full"
-          onClick={() => {
-            setShowCreate(true);
-            setCreateError(null);
-            setAddons(emptyAddons);
-          }}
+          onClick={() => { setShowCreate(true); setCreateError(null); setAddons(emptyAddons); }}
         >
           <Plus className="ml-1 h-4 w-4" />
           إضافة حجز
         </Button>
+      </div>
+
+      {/* tabs الحالات */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {[{ value: "", label: "كل الحالات" }, ...STATUS_OPTIONS].map((s) => (
+          <button
+            key={s.value}
+            onClick={() => setStatusFilter(s.value)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              statusFilter === s.value
+                ? "bg-primary text-white shadow-sm"
+                : "bg-secondary text-ink hover:bg-secondary/80"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
       {isLoading && (
@@ -328,7 +397,7 @@ function BookingsPage() {
             </tr>
           </thead>
           <tbody>
-            {(allBookings ?? []).map((b) => (
+            {filtered.map((b) => (
               <tr key={b.id} className="border-t border-border">
                 <td className="px-5 py-3 font-semibold text-ink">
                   {b.hall?.name ?? "—"}
@@ -392,7 +461,7 @@ function BookingsPage() {
                 </td>
               </tr>
             ))}
-            {!isLoading && (allBookings ?? []).length === 0 && (
+            {!isLoading && filtered.length === 0 && (
               <tr>
                 <td
                   colSpan={6}
@@ -494,31 +563,32 @@ function BookingsPage() {
                   )}
                   <div>
                     <label className={labelCls}>الديكور</label>
-                    <select
-                      className={inputCls}
-                      value={editForm.selected_decoration_id}
-                      onChange={(e) => {
-                        const newForm = {
-                          ...editForm,
-                          selected_decoration_id: e.target.value,
-                        };
-                        setEditForm({
-                          ...newForm,
-                          total_price: recalcEdit(
-                            newForm,
-                            editHall,
-                            editAddons,
-                          ),
-                        });
-                      }}
-                    >
-                      <option value="">بدون ديكور</option>
+                    <div className="space-y-2">
                       {editAddons.decorations.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.theme_name} — {formatSYP(d.price)}
-                        </option>
+                        <label key={d.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editForm.selected_decoration_ids.includes(d.id)}
+                            onChange={(e) => {
+                              const newIds = e.target.checked
+                                ? [...editForm.selected_decoration_ids, d.id]
+                                : editForm.selected_decoration_ids.filter(id => id !== d.id);
+                              const newForm = { ...editForm, selected_decoration_ids: newIds };
+                              setEditForm({
+                                ...newForm,
+                                total_price: recalcEdit(newForm, editHall, editAddons),
+                              });
+                            }}
+                          />
+                          <span>
+                            {d.theme_name} — {formatSYP(d.price)}
+                            {d.images?.[0] && (
+                              <img src={d.images[0]} alt={d.theme_name} className="h-10 w-14 rounded object-cover mt-1" />
+                            )}
+                          </span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
                   <div>
                     <label className={labelCls}>السيارة</label>
@@ -550,31 +620,32 @@ function BookingsPage() {
                   </div>
                   <div>
                     <label className={labelCls}>الموسيقى</label>
-                    <select
-                      className={inputCls}
-                      value={editForm.selected_music_id}
-                      onChange={(e) => {
-                        const newForm = {
-                          ...editForm,
-                          selected_music_id: e.target.value,
-                        };
-                        setEditForm({
-                          ...newForm,
-                          total_price: recalcEdit(
-                            newForm,
-                            editHall,
-                            editAddons,
-                          ),
-                        });
-                      }}
-                    >
-                      <option value="">بدون موسيقى</option>
+                    <div className="space-y-2">
                       {editAddons.music.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name} ({m.type}) — {formatSYP(m.price)}
-                        </option>
+                        <label key={m.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editForm.selected_music_ids.includes(m.id)}
+                            onChange={(e) => {
+                              const newIds = e.target.checked
+                                ? [...editForm.selected_music_ids, m.id]
+                                : editForm.selected_music_ids.filter(id => id !== m.id);
+                              const newForm = { ...editForm, selected_music_ids: newIds };
+                              setEditForm({
+                                ...newForm,
+                                total_price: recalcEdit(newForm, editHall, editAddons),
+                              });
+                            }}
+                          />
+                          <span>
+                            {m.name} ({m.type}) — {formatSYP(m.price)}
+                            {m.images?.[0] && (
+                              <img src={m.images[0]} alt={m.name} className="h-10 w-14 rounded object-cover mt-1" />
+                            )}
+                          </span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
                 </>
               )}
@@ -634,9 +705,9 @@ function BookingsPage() {
                     setCreateForm((f) => ({
                       ...f,
                       hall_id: hallId,
-                      selected_decoration_id: "",
+                      selected_decoration_ids: [],
                       selected_car_id: "",
-                      selected_music_id: "",
+                      selected_music_ids: [],
                     }));
                     loadAddons(hallId);
                   }}
@@ -741,24 +812,29 @@ function BookingsPage() {
                     {addons.decorations.length > 0 && (
                       <div>
                         <label className={labelCls}>الديكور</label>
-                        <select
-                          className={inputCls}
-                          value={createForm.selected_decoration_id ?? ""}
-                          onChange={(e) =>
-                            setCreateForm((f) => ({
-                              ...f,
-                              selected_decoration_id:
-                                e.target.value || undefined,
-                            }))
-                          }
-                        >
-                          <option value="">بدون ديكور</option>
+                        <div className="space-y-2">
                           {addons.decorations.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {d.theme_name} — {formatSYP(d.price)}
-                            </option>
+                            <label key={d.id} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={createForm.selected_decoration_ids?.includes(d.id) || false}
+                                onChange={(e) => {
+                                  const currentIds = createForm.selected_decoration_ids || [];
+                                  const newIds = e.target.checked
+                                    ? [...currentIds, d.id]
+                                    : currentIds.filter(id => id !== d.id);
+                                  setCreateForm(f => ({ ...f, selected_decoration_ids: newIds }));
+                                }}
+                              />
+                              <span>
+                                {d.theme_name} — {formatSYP(d.price)}
+                                {d.images?.[0] && (
+                                  <img src={d.images[0]} alt={d.theme_name} className="h-10 w-14 rounded object-cover mt-1" />
+                                )}
+                              </span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
                       </div>
                     )}
                     {addons.cars.length > 0 && (
@@ -786,23 +862,29 @@ function BookingsPage() {
                     {addons.music.length > 0 && (
                       <div>
                         <label className={labelCls}>الموسيقى</label>
-                        <select
-                          className={inputCls}
-                          value={createForm.selected_music_id ?? ""}
-                          onChange={(e) =>
-                            setCreateForm((f) => ({
-                              ...f,
-                              selected_music_id: e.target.value || undefined,
-                            }))
-                          }
-                        >
-                          <option value="">بدون موسيقى</option>
+                        <div className="space-y-2">
                           {addons.music.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} ({m.type}) — {formatSYP(m.price)}
-                            </option>
+                            <label key={m.id} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={createForm.selected_music_ids?.includes(m.id) || false}
+                                onChange={(e) => {
+                                  const currentIds = createForm.selected_music_ids || [];
+                                  const newIds = e.target.checked
+                                    ? [...currentIds, m.id]
+                                    : currentIds.filter(id => id !== m.id);
+                                  setCreateForm(f => ({ ...f, selected_music_ids: newIds }));
+                                }}
+                              />
+                              <span>
+                                {m.name} ({m.type}) — {formatSYP(m.price)}
+                                {m.images?.[0] && (
+                                  <img src={m.images[0]} alt={m.name} className="h-10 w-14 rounded object-cover mt-1" />
+                                )}
+                              </span>
+                            </label>
                           ))}
-                        </select>
+                        </div>
                       </div>
                     )}
                   </>

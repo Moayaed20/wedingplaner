@@ -46,14 +46,14 @@ export class Booking {
     total: number;
   }[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Decoration', default: null })
-  selected_decoration_id: Types.ObjectId | null;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Decoration' }], default: [] })
+  selected_decoration_ids: Types.ObjectId[];
 
   @Prop({ type: Types.ObjectId, ref: 'Car', default: null })
   selected_car_id: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'Music', default: null })
-  selected_music_id: Types.ObjectId | null;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Music' }], default: [] })
+  selected_music_ids: Types.ObjectId[];
 
   @Prop({ default: null })
   qr_code: string | null;

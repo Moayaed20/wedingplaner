@@ -5,7 +5,7 @@ import type { ComponentType, FormEvent } from "react";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
-import { Heart, Share2, MapPin, Users, Car, BedDouble, UtensilsCrossed, Snowflake, Phone, Star } from "lucide-react";
+import { Heart, Share2, MapPin, Phone, Star, Check } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -27,23 +27,144 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 import type { Booking, Catering, Car as CarType, Decoration, Hall, Music, Review } from "@/lib/types";
 
-const amenityIcons = [
-  { icon: Users, label: "سعة واسعة" },
-  { icon: BedDouble, label: "غرفة عروس" },
-  { icon: Car, label: "موقف سيارات" },
-  { icon: UtensilsCrossed, label: "صالة طعام" },
-  { icon: Snowflake, label: "تكييف" },
-];
-
-function GuestCapacity({ min, max }: { min: number; max: number }) {
-  return <span className="text-xs font-semibold text-ink/80">{min}–{max} ضيف</span>;
+// ---------- helpers ----------
+function toggle(prev: Record<string, boolean>, id: string): Record<string, boolean> {
+  const n = { ...prev };
+  n[id] ? delete n[id] : (n[id] = true);
+  return n;
 }
+
+// ---------- Horizontal slider ----------
+function HSlider({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+      {children}
+    </div>
+  );
+}
+
+// ---------- Decoration card (multi-select) ----------
+function DecorationCard({ item, selected, onToggle }: { item: Decoration; selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        "relative shrink-0 w-40 rounded-2xl border-2 overflow-hidden text-right transition-all snap-start",
+        selected ? "border-primary shadow-md" : "border-border hover:border-primary/40"
+      )}
+    >
+      <div className="relative h-24 w-full">
+        <Image
+          src={item.images?.[0] ?? "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop"}
+          alt={item.theme_name} fill className="object-cover"
+        />
+        {selected && (
+          <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+            <Check className="h-3.5 w-3.5" />
+          </span>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-xs font-bold text-ink leading-tight">{item.theme_name}</p>
+        <p className="text-xs font-semibold text-primary mt-0.5">{formatSYP(item.price)}</p>
+      </div>
+    </button>
+  );
+}
+
+// ---------- Music card (multi-select, no image) ----------
+function MusicCard({ item, selected, onToggle }: { item: Music; selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        "relative shrink-0 w-40 rounded-2xl border-2 text-right transition-all snap-start p-3 bg-white",
+        selected ? "border-primary shadow-md" : "border-border hover:border-primary/40"
+      )}
+    >
+      {selected && (
+        <span className="absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+          <Check className="h-3 w-3" />
+        </span>
+      )}
+      <p className="text-xs font-bold text-ink leading-tight">{item.name}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{item.type}</p>
+      <p className="text-xs font-semibold text-primary mt-1">{formatSYP(item.price)}</p>
+    </button>
+  );
+}
+
+// ---------- Car card (single-select) ----------
+function CarCard({ item, selected, onSelect }: { item: CarType; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "relative shrink-0 w-44 rounded-2xl border-2 overflow-hidden text-right transition-all snap-start",
+        selected ? "border-primary shadow-md" : "border-border hover:border-primary/40"
+      )}
+    >
+      <div className="relative h-28 w-full">
+        <Image
+          src={item.images?.[0] ?? "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&h=300&fit=crop"}
+          alt={item.car_name} fill className="object-cover"
+        />
+        {selected && (
+          <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+            <Check className="h-3.5 w-3.5" />
+          </span>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-xs font-bold text-ink leading-tight">{item.car_name}</p>
+        <p className="text-xs text-muted-foreground">{item.model}</p>
+        <p className="text-xs font-semibold text-primary mt-0.5">{formatSYP(item.price)}</p>
+      </div>
+    </button>
+  );
+}
+
+// ---------- Catering card (multi-select) ----------
+function CateringCard({ item, selected, onToggle }: { item: Catering; selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={cn(
+        "relative shrink-0 w-40 rounded-2xl border-2 overflow-hidden text-right transition-all snap-start",
+        selected ? "border-primary shadow-md" : "border-border hover:border-primary/40"
+      )}
+    >
+      <div className="relative h-24 w-full">
+        <Image
+          src={item.images?.[0] ?? "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop"}
+          alt={item.menu_name} fill className="object-cover"
+        />
+        {selected && (
+          <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+            <Check className="h-3.5 w-3.5" />
+          </span>
+        )}
+      </div>
+      <div className="p-2">
+        <p className="text-xs font-bold text-ink leading-tight">{item.menu_name}</p>
+        <p className="text-xs text-muted-foreground">{item.menu_type}</p>
+        <p className="text-xs font-semibold text-primary mt-0.5">{formatSYP(item.price_per_person)}/شخص</p>
+      </div>
+    </button>
+  );
+}
+
+
 
 export default function HallDetailPage() {
   const params = useParams<{ id: string }>();
   const hallId = params.id ?? "";
   const router = useRouter();
-  const { isAuthenticated, user, token } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const { data: hall, isLoading: hallLoading } = useApi<Hall>(() => HallsAPI.get(hallId), [hallId]);
   const { data: caterings } = useApi<Catering[]>(() => CateringsAPI.list(hallId), [hallId]);
@@ -51,14 +172,21 @@ export default function HallDetailPage() {
   const { data: cars } = useApi<CarType[]>(() => CarsAPI.list(hallId), [hallId]);
   const { data: musicOptions } = useApi<Music[]>(() => MusicAPI.list(hallId), [hallId]);
   const { data: reviews, refetch: refetchReviews } = useApi<Review[]>(() => ReviewsAPI.forHall(hallId), [hallId]);
+  const { data: myBookings } = useApi<Booking[]>(
+    (t) => (isAuthenticated && user?.role === "customer" ? BookingsAPI.mine(t!) : Promise.resolve([])),
+    [isAuthenticated]
+  );
 
   // Booking form state
   const [eventDate, setEventDate] = useState("");
   const [guestCount, setGuestCount] = useState<number | "">("");
-  const [selectedCateringIds, setSelectedCateringIds] = useState<Record<string, number>>({});
-  const [selectedDecorationId, setSelectedDecorationId] = useState<string>("");
-  const [selectedCarId, setSelectedCarId] = useState<string>("");
-  const [selectedMusicId, setSelectedMusicId] = useState<string>("");
+  // multi-select
+  const [selectedCateringIds, setSelectedCateringIds] = useState<Record<string, boolean>>({});
+  const [selectedDecorationIds, setSelectedDecorationIds] = useState<Record<string, boolean>>({});
+  const [selectedMusicIds, setSelectedMusicIds] = useState<Record<string, boolean>>({});
+  // single-select
+  const [selectedCarId, setSelectedCarId] = useState("");
+
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
@@ -72,13 +200,11 @@ export default function HallDetailPage() {
         hall_id: hallId,
         event_date: eventDate,
         guest_count: Number(guestCount),
-        selected_caterings: Object.entries(selectedCateringIds)
-          .filter(([, q]) => q > 0)
-          .map(([id, quantity]) => ({ catering_id: id, quantity })),
+        selected_caterings: Object.keys(selectedCateringIds).map((id) => ({ catering_id: id, quantity: 1 })),
+        selected_decoration_ids: Object.keys(selectedDecorationIds),
+        selected_music_ids: Object.keys(selectedMusicIds),
       };
-      if (selectedDecorationId) body.selected_decoration_id = selectedDecorationId;
       if (selectedCarId) body.selected_car_id = selectedCarId;
-      if (selectedMusicId) body.selected_music_id = selectedMusicId;
       return BookingsAPI.create(body, t!);
     }
   );
@@ -113,21 +239,20 @@ export default function HallDetailPage() {
     refetchReviews();
   };
 
-  const toggleCatering = (id: string) => {
-    setSelectedCateringIds((prev) => {
-      const next = { ...prev };
-      if (next[id]) delete next[id];
-      else next[id] = 1;
-      return next;
-    });
-  };
-
   const estimatedTotal =
     (hall.price_per_person * Number(guestCount || 0)) +
-    (caterings ?? []).reduce((sum, c) => sum + c.price_per_person * Number(guestCount || 0) * (selectedCateringIds[c.id] ?? 0), 0) +
-    ((decorations?.find((d) => d.id === selectedDecorationId)?.price) ?? 0) +
-    ((cars?.find((c) => c.id === selectedCarId)?.price) ?? 0) +
-    ((musicOptions?.find((m) => m.id === selectedMusicId)?.price) ?? 0);
+    (decorations ?? []).filter((d) => selectedDecorationIds[d.id]).reduce((s, d) => s + d.price, 0) +
+    (cars?.find((c) => c.id === selectedCarId)?.price ?? 0) +
+    (musicOptions ?? []).filter((m) => selectedMusicIds[m.id]).reduce((s, m) => s + m.price, 0) +
+    (caterings ?? []).filter((c) => selectedCateringIds[c.id]).reduce((s, c) => s + c.price_per_person * Number(guestCount || 0), 0);
+
+  const hasConfirmedBooking = (myBookings ?? []).some((b) => {
+    const bHallId = typeof b.hall_id === "string" ? b.hall_id : (b.hall as any)?.id ?? "";
+    return bHallId === hallId && b.status === "confirmed";
+  });
+  const alreadyReviewed = (reviews ?? []).some(
+    (r) => r.user?.id === user?.id || r.user_id === user?.id
+  );
 
   return (
     <>
@@ -145,12 +270,7 @@ export default function HallDetailPage() {
           <div className="grid grid-cols-2 gap-2 sm:h-full">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="relative h-28 sm:h-full">
-                <Image
-                  src={hall.images[i % hall.images.length] ?? hall.images[0]}
-                  alt=""
-                  fill
-                  className="object-cover"
-                />
+                <Image src={hall.images[i % hall.images.length] ?? hall.images[0]} alt="" fill className="object-cover" />
                 {i === 4 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-ink/50 text-sm font-semibold text-white">
                     عرض كل الصور
@@ -161,7 +281,7 @@ export default function HallDetailPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_400px]">
           {/* Main content */}
           <div>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -175,29 +295,11 @@ export default function HallDetailPage() {
               <Rating value={hall.rating} className="text-base" />
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-5">
-              {amenityIcons.map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-secondary/50 py-4 text-center"
-                >
-                  <Icon className="h-5 w-5 text-primary" />
-                  <span className="text-xs font-semibold text-ink/80">{label}</span>
-                </div>
-              ))}
-            </div>
-
             <Tabs defaultValue="about" className="mt-8">
               <TabsList className="rounded-full bg-secondary/70 p-1">
-                <TabsTrigger value="about" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  نبذة
-                </TabsTrigger>
-                <TabsTrigger value="services" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  الخدمات
-                </TabsTrigger>
-                <TabsTrigger value="location" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  الموقع
-                </TabsTrigger>
+                <TabsTrigger value="about" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">نبذة</TabsTrigger>
+                <TabsTrigger value="services" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">الخدمات</TabsTrigger>
+                <TabsTrigger value="location" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">الموقع</TabsTrigger>
                 <TabsTrigger value="reviews" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">
                   التقييمات ({(reviews ?? []).length})
                 </TabsTrigger>
@@ -229,32 +331,29 @@ export default function HallDetailPage() {
               <TabsContent value="reviews">
                 <div className="space-y-5">
                   {isAuthenticated && user?.role === "customer" && (
+                    hasConfirmedBooking && !alreadyReviewed ? (
                     <form onSubmit={handleReview} className="rounded-2xl border border-border bg-white p-4 shadow-card">
                       <h4 className="mb-3 font-bold text-ink">أضف تقييمك</h4>
                       <div className="mb-3 flex gap-1">
                         {[1, 2, 3, 4, 5].map((n) => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() => setRating(n)}
-                            className={cn("rounded-full p-1 transition-colors", n <= rating ? "text-gold" : "text-border")}
-                          >
+                          <button key={n} type="button" onClick={() => setRating(n)}
+                            className={cn("rounded-full p-1 transition-colors", n <= rating ? "text-gold" : "text-border")}>
                             <Star className="h-5 w-5 fill-current" />
                           </button>
                         ))}
                       </div>
-                      <textarea
-                        value={reviewText}
-                        onChange={(e) => setReviewText(e.target.value)}
+                      <textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)}
                         placeholder="اكتب رأيك..."
                         className="h-24 w-full rounded-2xl border border-input bg-white p-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                       />
-                      <Button className="mt-2 rounded-full" size="sm" type="submit">
-                        نشر التقييم
-                      </Button>
+                      <Button className="mt-2 rounded-full" size="sm" type="submit">نشر التقييم</Button>
                     </form>
+                    ) : alreadyReviewed ? (
+                      <p className="rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">شكراً، لقد قيّمت هذه الصالة مسبقاً.</p>
+                    ) : (
+                      <p className="rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">يمكنك التقييم فقط بعد تأكيد حجزك في هذه الصالة.</p>
+                    )
                   )}
-
                   {(reviews ?? []).map((r) => (
                     <div key={r.id} className="flex gap-3 border-b border-border pb-5 last:border-0">
                       <Avatar>
@@ -270,109 +369,107 @@ export default function HallDetailPage() {
                       </div>
                     </div>
                   ))}
-                  {(reviews ?? []).length === 0 && (
-                    <p className="text-sm text-muted-foreground">لا توجد تقييمات بعد.</p>
-                  )}
+                  {(reviews ?? []).length === 0 && <p className="text-sm text-muted-foreground">لا توجد تقييمات بعد.</p>}
                 </div>
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Booking sidebar */}
-          <aside className="h-fit space-y-4 rounded-[2rem] border border-border bg-white p-5 shadow-card lg:sticky lg:top-24">
+          <aside className="h-fit space-y-5 rounded-[2rem] border border-border bg-white p-5 shadow-card lg:sticky lg:top-24">
             <h3 className="font-bold text-ink">احجز هذا المكان</h3>
-            <form onSubmit={handleBooking} className="space-y-3">
+            <form onSubmit={handleBooking} className="space-y-4">
+
+              {/* Date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">التاريخ</label>
-                <input
-                  type="date"
-                  required
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
+                <input type="date" required value={eventDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => { setEventDate(e.target.value); setBookingError(null); setBookingSuccess(false); }}
                   className="h-11 w-full rounded-2xl border border-input bg-white px-3 text-sm text-ink/80 outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
+
+              {/* Guest count */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">عدد الضيوف</label>
-                <input
-                  type="number"
-                  required
-                  min={hall.min_capacity}
-                  max={hall.max_capacity}
+                <input type="number" required min={hall.min_capacity} max={hall.max_capacity}
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value === "" ? "" : Number(e.target.value))}
                   placeholder="عدد الضيوف"
                   className="h-11 w-full rounded-2xl border border-input bg-white px-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                 />
-                <p className="text-xs text-muted-foreground">
-                  السعة: {hall.min_capacity}–{hall.max_capacity} ضيف
-                </p>
+                <p className="text-xs text-muted-foreground">السعة: {hall.min_capacity}–{hall.max_capacity} ضيف</p>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">الضيافة (اختياري)</p>
-                {(caterings ?? []).map((c) => (
-                  <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-xl border border-border p-2 text-sm hover:bg-secondary/50">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedCateringIds[c.id]}
-                      onChange={() => toggleCatering(c.id)}
-                      className="h-4 w-4 accent-primary"
-                    />
-                    <span className="flex-1">{c.menu_name}</span>
-                    <span className="font-bold text-primary">{formatSYP(c.price_per_person)}</span>
-                  </label>
-                ))}
-              </div>
+              {/* Decorations — multi-select slider */}
+              {(decorations ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">الديكور (يمكن اختيار أكثر من واحد)</p>
+                  <HSlider>
+                    {(decorations ?? []).map((d) => (
+                      <DecorationCard key={d.id} item={d}
+                        selected={!!selectedDecorationIds[d.id]}
+                        onToggle={() => setSelectedDecorationIds((p) => toggle(p, d.id))}
+                      />
+                    ))}
+                  </HSlider>
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">الديكور (اختياري)</p>
-                <select
-                  value={selectedDecorationId}
-                  onChange={(e) => setSelectedDecorationId(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-input bg-white px-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
-                >
-                  <option value="">بدون ديكور</option>
-                  {(decorations ?? []).map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.theme_name} — {formatSYP(d.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Cars — single-select slider */}
+              {(cars ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-muted-foreground">السيارة (اختر واحدة فقط)</p>
+                    {selectedCarId && (
+                      <button type="button" onClick={() => setSelectedCarId("")} className="text-xs text-primary hover:underline">
+                        إلغاء
+                      </button>
+                    )}
+                  </div>
+                  <HSlider>
+                    {(cars ?? []).map((c) => (
+                      <CarCard key={c.id} item={c}
+                        selected={selectedCarId === c.id}
+                        onSelect={() => setSelectedCarId(selectedCarId === c.id ? "" : c.id)}
+                      />
+                    ))}
+                  </HSlider>
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">السيارة (اختياري)</p>
-                <select
-                  value={selectedCarId}
-                  onChange={(e) => setSelectedCarId(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-input bg-white px-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
-                >
-                  <option value="">بدون سيارة</option>
-                  {(cars ?? []).map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.car_name} — {formatSYP(c.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Catering — multi-select slider */}
+              {(caterings ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">الضيافة (يمكن اختيار أكثر من واحد)</p>
+                  <HSlider>
+                    {(caterings ?? []).map((c) => (
+                      <CateringCard key={c.id} item={c}
+                        selected={!!selectedCateringIds[c.id]}
+                        onToggle={() => setSelectedCateringIds((p) => toggle(p, c.id))}
+                      />
+                    ))}
+                  </HSlider>
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">الموسيقى (اختياري)</p>
-                <select
-                  value={selectedMusicId}
-                  onChange={(e) => setSelectedMusicId(e.target.value)}
-                  className="h-11 w-full rounded-2xl border border-input bg-white px-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
-                >
-                  <option value="">بدون موسيقى</option>
-                  {(musicOptions ?? []).map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} — {formatSYP(m.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Music — multi-select (no image, last) */}
+              {(musicOptions ?? []).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">الموسيقى (يمكن اختيار أكثر من واحد)</p>
+                  <HSlider>
+                    {(musicOptions ?? []).map((m) => (
+                      <MusicCard key={m.id} item={m}
+                        selected={!!selectedMusicIds[m.id]}
+                        onToggle={() => setSelectedMusicIds((p) => toggle(p, m.id))}
+                      />
+                    ))}
+                  </HSlider>
+                </div>
+              )}
 
+              {/* Total */}
               <div className="flex items-center justify-between rounded-2xl bg-secondary/60 px-3 py-2.5 text-sm">
                 <span className="text-muted-foreground">المبلغ المتوقع</span>
                 <span className="font-bold text-primary">{formatSYP(estimatedTotal)}</span>
@@ -401,15 +498,7 @@ export default function HallDetailPage() {
   );
 }
 
-function ServiceList<T extends { id: string }>({
-  title,
-  items,
-  render,
-}: {
-  title: string;
-  items: T[];
-  render: (item: T) => string;
-}) {
+function ServiceList<T extends { id: string }>({ title, items, render }: { title: string; items: T[]; render: (item: T) => string }) {
   if (!items.length) return null;
   return (
     <div className="rounded-2xl border border-border bg-white p-4 shadow-card">
@@ -440,7 +529,7 @@ function DetailSkeleton() {
       <SiteHeader />
       <main className="container py-8">
         <div className="h-80 w-full animate-pulse rounded-[2rem] bg-secondary" />
-        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_400px]">
           <div className="space-y-4">
             <div className="h-8 w-1/2 animate-pulse rounded-xl bg-secondary" />
             <div className="h-4 w-1/3 animate-pulse rounded-xl bg-secondary" />

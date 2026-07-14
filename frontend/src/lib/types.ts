@@ -238,6 +238,7 @@ export interface Music {
   type: string;
   price: number;
   description?: string;
+  images?: string[];
   status: HallStatus;
 }
 
@@ -273,12 +274,12 @@ export interface Booking {
     price_per_person: number;
     total: number;
   }[];
-  selected_decoration_id: string | null;
-  selected_decoration?: Decoration | null;
+  selected_decoration_ids: string[];
+  selected_decorations?: Decoration[];
   selected_car_id: string | null;
   selected_car?: Car | null;
-  selected_music_id: string | null;
-  selected_music?: Music | null;
+  selected_music_ids: string[];
+  selected_musics?: Music[];
   qr_code?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -289,9 +290,9 @@ export interface CreateBookingBody {
   event_date: string;
   guest_count: number;
   selected_caterings?: SelectedCatering[];
-  selected_decoration_id?: string;
+  selected_decoration_ids?: string[];
   selected_car_id?: string;
-  selected_music_id?: string;
+  selected_music_ids?: string[];
 }
 
 export interface Review {
@@ -299,6 +300,7 @@ export interface Review {
   _id?: string;
   user_id: string;
   user?: User;
+  customer?: User;
   hall_id: string;
   hall?: Hall;
   rating: number;

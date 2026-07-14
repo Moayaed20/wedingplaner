@@ -36,33 +36,53 @@ export class BookingsService {
     return this.bookingModel
       .find()
       .populate('customer_id', 'name email')
-      .populate('hall_id', 'name city')
-      .populate('selected_decoration_id', 'theme_name price')
-      .populate('selected_car_id', 'car_name model price')
-      .populate('selected_music_id', 'name type price')
+      .populate('hall_id', 'name city images')
+      .populate('selected_decoration_ids', 'theme_name price images description')
+      .populate('selected_car_id', 'car_name model price capacity images description')
+      .populate('selected_music_ids', 'name type price description images')
       .exec();
   }
 
   async findByCustomer(customerId: string): Promise<Booking[]> {
     return this.bookingModel
       .find({ customer_id: new Types.ObjectId(customerId) })
-      .populate('hall_id', 'name city')
-      .populate('selected_decoration_id', 'theme_name price')
-      .populate('selected_car_id', 'car_name model price')
-      .populate('selected_music_id', 'name type price')
+      .populate('hall_id', 'name city images')
+      .populate('selected_decoration_ids', 'theme_name price images description')
+      .populate('selected_car_id', 'car_name model price capacity images description')
+      .populate('selected_music_ids', 'name type price description images')
       .exec();
   }
 
   async findByHall(hallId: string, status?: BookingStatus): Promise<Booking[]> {
     const query: any = { hall_id: new Types.ObjectId(hallId) };
     if (status) query.status = status;
-    return this.bookingModel
+    
+    const bookings = await this.bookingModel
       .find(query)
-      .populate('customer_id', 'name email')
-      .populate('selected_decoration_id', 'theme_name price')
-      .populate('selected_car_id', 'car_name model price')
-      .populate('selected_music_id', 'name type price')
+      .populate('customer_id', 'name email phone')
+      .populate('hall_id', 'name city images')
+      .populate('selected_decoration_ids', 'theme_name price images description')
+      .populate('selected_car_id', 'car_name model price capacity images description')
+      .populate('selected_music_ids', 'name type price description images')
       .exec();
+    
+    // Debug: check populate results
+    console.log('🔍 Backend DEBUG - Bookings for hall:', hallId);
+    bookings.forEach((b, i) => {
+      console.log(`Booking ${i}:`, {
+        id: b._id,
+        decorationIds: b.selected_decoration_ids,
+        decorationIdsType: typeof b.selected_decoration_ids,
+        isDecorationIdsArray: Array.isArray(b.selected_decoration_ids),
+        decorationIdsFirstItem: b.selected_decoration_ids?.[0],
+        decorationIdsFirstItemType: b.selected_decoration_ids?.[0] ? typeof b.selected_decoration_ids[0] : 'none',
+        musicIds: b.selected_music_ids,
+        carId: b.selected_car_id,
+        carType: typeof b.selected_car_id
+      });
+    });
+    
+    return bookings;
   }
 
   async findOne(id: string): Promise<Booking> {
@@ -71,11 +91,11 @@ export class BookingsService {
     }
     const booking = await this.bookingModel
       .findById(id)
-      .populate('customer_id', 'name email')
-      .populate('hall_id')
-      .populate('selected_decoration_id', 'theme_name price')
-      .populate('selected_car_id', 'car_name model price')
-      .populate('selected_music_id', 'name type price')
+      .populate('customer_id', 'name email phone')
+      .populate('hall_id', 'name city images')
+      .populate('selected_decoration_ids', 'theme_name price images description')
+      .populate('selected_car_id', 'car_name model price capacity images description')
+      .populate('selected_music_ids', 'name type price description images')
       .exec();
     if (!booking) throw new NotFoundException('Booking not found');
     return booking;
@@ -91,6 +111,16 @@ export class BookingsService {
       ])
     ) {
       throw new BadRequestException('This date is already booked');
+    }
+
+    const duplicate = await this.bookingModel.findOne({
+      customer_id: new Types.ObjectId(customerId),
+      hall_id: new Types.ObjectId(dto.hall_id),
+      event_date: eventDate,
+      status: { $in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+    });
+    if (duplicate) {
+      throw new BadRequestException('You already have a booking for this hall on this date');
     }
 
     if (dto.guest_count < hall.min_capacity || dto.guest_count > hall.max_capacity) {
@@ -129,26 +159,26 @@ export class BookingsService {
       status: BookingStatus.PENDING,
       total_price: total,
       selected_caterings: selectedCaterings,
-      selected_decoration_id: dto.selected_decoration_id
-        ? new Types.ObjectId(dto.selected_decoration_id)
-        : null,
+      selected_decoration_ids: (dto.selected_decoration_ids ?? []).map(
+        (id) => new Types.ObjectId(id),
+      ),
       selected_car_id: dto.selected_car_id
         ? new Types.ObjectId(dto.selected_car_id)
         : null,
-      selected_music_id: dto.selected_music_id
-        ? new Types.ObjectId(dto.selected_music_id)
-        : null,
+      selected_music_ids: (dto.selected_music_ids ?? []).map(
+        (id) => new Types.ObjectId(id),
+      ),
       qr_code: null,
     });
 
-    if (dto.selected_decoration_id) {
-      const decoration = await this.decorationsService.findOne(
-        dto.selected_decoration_id,
-      );
-      if ((decoration.hall_id as any).toString() !== dto.hall_id) {
-        throw new BadRequestException('Decoration does not belong to selected hall');
+    if (dto.selected_decoration_ids?.length) {
+      for (const decoId of dto.selected_decoration_ids) {
+        const decoration = await this.decorationsService.findOne(decoId);
+        if ((decoration.hall_id as any).toString() !== dto.hall_id) {
+          throw new BadRequestException('Decoration does not belong to selected hall');
+        }
+        total += decoration.price;
       }
-      total += decoration.price;
     }
 
     if (dto.selected_car_id) {
@@ -159,12 +189,14 @@ export class BookingsService {
       total += car.price;
     }
 
-    if (dto.selected_music_id) {
-      const music = await this.musicService.findOne(dto.selected_music_id);
-      if ((music.hall_id as any).toString() !== dto.hall_id) {
-        throw new BadRequestException('Music does not belong to selected hall');
+    if (dto.selected_music_ids?.length) {
+      for (const musicId of dto.selected_music_ids) {
+        const music = await this.musicService.findOne(musicId);
+        if ((music.hall_id as any).toString() !== dto.hall_id) {
+          throw new BadRequestException('Music does not belong to selected hall');
+        }
+        total += music.price;
       }
-      total += music.price;
     }
 
     created.total_price = total;
@@ -241,20 +273,20 @@ export class BookingsService {
       ...(body.event_date && { event_date: this.normalizeDate(body.event_date) }),
       ...(body.guest_count && { guest_count: body.guest_count }),
       ...(body.total_price !== undefined && { total_price: body.total_price }),
-      ...(body.selected_decoration_id !== undefined && {
-        selected_decoration_id: body.selected_decoration_id
-          ? new Types.ObjectId(body.selected_decoration_id)
-          : null,
+      ...(body.selected_decoration_ids !== undefined && {
+        selected_decoration_ids: (body.selected_decoration_ids ?? []).map(
+          (id: string) => new Types.ObjectId(id),
+        ),
       }),
       ...(body.selected_car_id !== undefined && {
         selected_car_id: body.selected_car_id
           ? new Types.ObjectId(body.selected_car_id)
           : null,
       }),
-      ...(body.selected_music_id !== undefined && {
-        selected_music_id: body.selected_music_id
-          ? new Types.ObjectId(body.selected_music_id)
-          : null,
+      ...(body.selected_music_ids !== undefined && {
+        selected_music_ids: (body.selected_music_ids ?? []).map(
+          (id: string) => new Types.ObjectId(id),
+        ),
       }),
     });
     return this.findOne(id);

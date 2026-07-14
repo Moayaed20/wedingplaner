@@ -67,8 +67,8 @@ async function bootstrap() {
             min_capacity: 100,
             max_capacity: 500,
             rating: 4.5,
-            images: ['https://example.com/hall1.jpg'],
-            images_360: ['https://example.com/hall1-360.jpg'],
+            images: ['https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&h=600&fit=crop'],
+            images_360: ['https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop'],
             contact: '555-1000',
             status: hall_status_enum_1.HallStatus.ACTIVE,
             availability_calendar: [],
@@ -83,7 +83,7 @@ async function bootstrap() {
             min_capacity: 50,
             max_capacity: 300,
             rating: 4,
-            images: ['https://example.com/hall2.jpg'],
+            images: ['https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&h=600&fit=crop'],
             images_360: [],
             contact: '555-2000',
             status: hall_status_enum_1.HallStatus.ACTIVE,
@@ -123,7 +123,23 @@ async function bootstrap() {
             theme_name: 'Golden Elegance',
             price: 1200,
             description: 'Gold and white floral theme',
-            images: ['https://example.com/deco1.jpg'],
+            images: ['https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall1._id,
+            theme_name: 'Rose Romance',
+            price: 950,
+            description: 'Soft pink and rose petal theme',
+            images: ['https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall1._id,
+            theme_name: 'Modern Minimalist',
+            price: 750,
+            description: 'Clean white and silver modern look',
+            images: ['https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&h=600&fit=crop'],
             status: hall_status_enum_1.HallStatus.ACTIVE,
         },
         {
@@ -131,7 +147,15 @@ async function bootstrap() {
             theme_name: 'Rustic Garden',
             price: 900,
             description: 'Natural rustic garden theme',
-            images: ['https://example.com/deco2.jpg'],
+            images: ['https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall2._id,
+            theme_name: 'Bohemian Dream',
+            price: 800,
+            description: 'Boho style with macrame and candles',
+            images: ['https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=800&h=600&fit=crop'],
             status: hall_status_enum_1.HallStatus.ACTIVE,
         },
     ]);
@@ -143,7 +167,27 @@ async function bootstrap() {
             price: 800,
             capacity: 4,
             description: 'Luxury wedding car',
-            images: ['https://example.com/car1.jpg'],
+            images: ['https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall1._id,
+            car_name: 'Mercedes S-Class',
+            model: '2022',
+            price: 500,
+            capacity: 4,
+            description: 'Elegant executive sedan',
+            images: ['https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall1._id,
+            car_name: 'Vintage Bentley',
+            model: '1970',
+            price: 650,
+            capacity: 4,
+            description: 'Classic vintage Bentley',
+            images: ['https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=600&fit=crop'],
             status: hall_status_enum_1.HallStatus.ACTIVE,
         },
         {
@@ -153,7 +197,17 @@ async function bootstrap() {
             price: 600,
             capacity: 4,
             description: 'Classic American wedding car',
-            images: ['https://example.com/car2.jpg'],
+            images: ['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&h=600&fit=crop'],
+            status: hall_status_enum_1.HallStatus.ACTIVE,
+        },
+        {
+            hall_id: hall2._id,
+            car_name: 'White Limousine',
+            model: '2020',
+            price: 700,
+            capacity: 8,
+            description: 'Stretch limousine for the wedding party',
+            images: ['https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=800&h=600&fit=crop'],
             status: hall_status_enum_1.HallStatus.ACTIVE,
         },
     ]);
@@ -193,7 +247,7 @@ async function bootstrap() {
             status: hall_status_enum_1.HallStatus.ACTIVE,
         },
     ]);
-    console.log(`Created options: ${3} caterings, ${2} decorations, ${2} cars, ${2} music, ${2} services`);
+    console.log(`Created options: 3 caterings, 5 decorations, 5 cars, 2 music, 2 services`);
     const eventDate = new Date();
     eventDate.setDate(eventDate.getDate() + 30);
     eventDate.setUTCHours(0, 0, 0, 0);

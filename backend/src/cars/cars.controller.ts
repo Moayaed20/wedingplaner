@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/enums/user-role.enum';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('cars')
 @ApiBearerAuth()
@@ -23,6 +24,7 @@ export class CarsController {
   constructor(private readonly carsService: CarsService) {}
 
   @Get('halls/:hallId/cars')
+  @Public()
   @ApiOperation({ summary: 'List cars for a hall (public)' })
   async findByHall(@Param('hallId') hallId: string) {
     return this.carsService.findByHall(hallId);

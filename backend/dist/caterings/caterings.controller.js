@@ -21,6 +21,7 @@ const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 let CateringsController = class CateringsController {
     constructor(cateringsService) {
         this.cateringsService = cateringsService;
@@ -41,6 +42,7 @@ let CateringsController = class CateringsController {
 exports.CateringsController = CateringsController;
 __decorate([
     (0, common_1.Get)('halls/:hallId/caterings'),
+    (0, public_decorator_1.Public)(),
     (0, swagger_1.ApiOperation)({ summary: 'List caterings for a hall (public)' }),
     __param(0, (0, common_1.Param)('hallId')),
     __metadata("design:type", Function),
